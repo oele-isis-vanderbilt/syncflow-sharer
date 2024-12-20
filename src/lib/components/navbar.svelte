@@ -42,7 +42,7 @@
 		activeClass="md:!ps-3 md:!py-2 lg:!ps-0 text-white bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:dark:text-primary-700 dark:bg-primary-600 lg:dark:bg-transparent cursor-default"
 	>
 		<NavLi class="lg:mb-0 lg:px-2" href="/">Home</NavLi>
-		<NavLi class="lg:mb-0 lg:px-2" href="/settings">Settings</NavLi>
+		<NavLi class="lg:mb-0 lg:px-2" href="/admin">Admin</NavLi>
 	</NavUl>
 
 	<div class="ms-auto flex items-center">

@@ -74,7 +74,7 @@
 					2
 				)}</pre>
 		{:else if sharing}
-			You are sharing to session {selected} as {identity}
+			<p class="text-black dark:text-gray-300">You are sharing to session {selected} as {identity}</p>
 		{:else}
 			<h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-300">
 				Select Session to Share

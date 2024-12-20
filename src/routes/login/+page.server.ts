@@ -1,6 +1,14 @@
 import type { Actions } from "@sveltejs/kit";
 import * as bcrypt from "bcrypt";
 import { fail, redirect } from "@sveltejs/kit";
+import { request } from "http";
+import type { PageServerLoad } from "./$types";
+
+export const load: PageServerLoad = async ({locals}) => {
+    if (locals.user) {
+        throw redirect(303, "/");
+    }
+}
 
 export const actions = {
     login: async ({ request, cookies }) => {
@@ -9,7 +17,7 @@ export const actions = {
         const password = formData.get('password') as string;
 
         if (username === process.env.ROOT_USER && await bcrypt.compare(password, process.env.ROOT_PASSWORD!)) {
-            cookies.set('sessionId', crypto.randomUUID(), {path: '/', httpOnly: true, expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365)});
+            cookies.set('sessionId', crypto.randomUUID(), {path: '/', httpOnly: true, expires: new Date(Date.now() + 1000 * 60 * 60 * 24)});
             throw redirect(303, "/"); 
         } else {
             return fail(401, {
