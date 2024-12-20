@@ -1,0 +1,16 @@
+<script lang="ts">
+	import Navbar from '$lib/components/navbar.svelte';
+	import type { Snippet } from 'svelte';
+	import '../app.css';
+	import type { LayoutData } from './$types';
+	import { ModeWatcher } from 'mode-watcher';
+	let { children, data }: {data: LayoutData, children: Snippet} = $props();
+</script>
+
+<ModeWatcher />
+<header
+	class="sticky top-0 z-40 mx-auto w-full flex-none border-b border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-900"
+>
+	<Navbar user={data.user?.name}/>
+</header>
+{@render children()}
