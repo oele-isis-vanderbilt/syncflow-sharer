@@ -4,6 +4,6 @@ services:
     image: syncflow-sharer:latest
     container_name: syncflow-sharer
     ports:
-      - "3000:3000"
+      - '3000:3000'
     env_file:
       - .env

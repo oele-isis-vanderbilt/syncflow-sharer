@@ -1,7 +1,9 @@
 # Syncflow Sharer
+
 This is a demo application that allows you to share different media to a SyncFlow project. This project will be handy for systems in which direct integrations with SyncFlow and your system isn't possible.
 
 ## Deployment Instructions
+
 First, Create an environment file (`secrets.ts`) with the following content:
 
 ```{sh}
@@ -21,7 +23,9 @@ $ docker compose up
 ```
 
 ## License
+
 [Apache 2.0](./LICENSE)
 
 ## Funding Information
+
 This work is supported by the National Science Foundation under Grant No. DRL-2112635.

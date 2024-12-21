@@ -1,21 +1,21 @@
-import type { Handle } from "@sveltejs/kit"
-import { redirect } from "@sveltejs/kit";
+import type { Handle } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 
-export const handle: Handle = async ({event, resolve}) => {
+export const handle: Handle = async ({ event, resolve }) => {
+	const sessionId = event.cookies.get('sessionId');
 
-    const sessionId = event.cookies.get('sessionId');
+	if (event.route.id === '/admin' || event.route.id === '/preview') {
+		if (!sessionId) {
+			throw redirect(302, '/login');
+		}
+	}
 
-    if (event.route.id === '/admin') {
-        if (!sessionId) {
-            throw redirect(302, '/login');
-        }
-    }
-    
+	event.locals.user = sessionId
+		? {
+				name: process.env.ROOT_USER,
+				sessionId: sessionId
+			}
+		: null;
 
-    event.locals.user = sessionId ? {
-        name: process.env.ROOT_USER,
-        sessionId: sessionId
-    }: null;
-
-    return resolve(event);
-} 
+	return resolve(event);
+};
