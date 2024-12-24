@@ -7,9 +7,9 @@
 	<div class="max-w-8xl mx-auto flex flex-col py-6 lg:py-6">
 		<div class="flex items-center justify-center px-4 text-center">
 			<FooterCopyright
-				href="https://engageai.org/"
+				href="https://teachableagents.org"
 				target="_blank"
-				by="EngageAI Institute"
+				by="Open Ended Learning Environments Lab, Vanderbilt University"
 				copyrightMessage=" | All Rights Reserved."
 			/>
 		</div>
