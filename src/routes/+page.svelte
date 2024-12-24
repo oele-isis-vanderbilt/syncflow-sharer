@@ -7,7 +7,7 @@
 	import { applyAction } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import DeviceSelector from '$lib/components/device-selector.svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -28,11 +28,13 @@
 		audioDeviceId: '',
 		videoDeviceId: ''
 	});
+	let room = $state<livekit.Room | null>(null);
 	const settings = data.settings;
 	let sessionSharingErrors = $state('');
+	let devices = $state<MediaDeviceInfo[]>([]);
 
 	async function shareDevicesToSession(token: string, livekitServerUrl: string) {
-		const room = new livekit.Room({
+		room = new livekit.Room({
 			adaptiveStream: true,
 			dynacast: true,
 
@@ -41,7 +43,8 @@
 			},
 			publishDefaults: {
 				videoCodec: 'vp9'
-			}
+			},
+			stopLocalTrackOnUnpublish: true
 		});
 		room.prepareConnection(token, livekitServerUrl);
 
@@ -80,18 +83,24 @@
 		});
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		if (browser) {
 			const userDeviceSelections = window.localStorage.getItem('userDeviceSelections');
 			if (userDeviceSelections) {
 				selectedDeviceIds = JSON.parse(userDeviceSelections);
 			}
+			devices = await livekit.Room.getLocalDevices();
+		}
+	});
+
+	onDestroy(async () => {
+		if (sharing && room && room.state === livekit.ConnectionState.Connected) {
+			await room.disconnect();
 		}
 	});
 
 	const deviceExists = async (deviceId: string) => {
 		if (browser) {
-			const devices = await livekit.Room.getLocalDevices();
 			return devices.map((d) => d.deviceId).includes(deviceId);
 		} else {
 			return false;
@@ -129,6 +138,26 @@
 
 		return canShare;
 	});
+
+	function getSelectedSessionName() {
+		return selections.find((session) => session.value === selected)?.name;
+	}
+
+	function getSelectedAudioDeviceName() {
+		return devices.find((device) => device.deviceId === selectedDeviceIds.audioDeviceId)?.label;
+	}
+
+	function getSelectedVideoDeviceName() {
+		return devices.find((device) => device.deviceId === selectedDeviceIds.videoDeviceId)?.label;
+	}
+
+	async function stopPublishing() {
+		if (room) {
+			await room.disconnect();
+			room = null;
+			sharing = false;
+		}
+	}
 </script>
 
 <div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
@@ -143,7 +172,35 @@
 				2
 			)}</pre>
 	{:else if sharing}
-		<p class="text-black dark:text-gray-300">You are sharing to session {selected} as {identity}</p>
+		<div class="text-center">
+			<h2 class="text-lg font-bold italic text-black dark:text-gray-300">
+				You are sharing to session {getSelectedSessionName()} as {identity}
+			</h2>
+			{#if settings?.enableAudio}
+				<p class="text-black dark:text-gray-300">Audio Device: {getSelectedAudioDeviceName()}</p>
+			{/if}
+			{#if settings?.enableCamera}
+				<p class="text-black dark:text-gray-300">Video Device: {getSelectedVideoDeviceName()}</p>
+			{/if}
+			{#if settings?.enableScreenShare}
+				<p class="text-black dark:text-gray-300">Screen Share: Enabled</p>
+			{/if}
+			<Button
+				class="mt-4 w-full rounded bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-700"
+				on:click={stopPublishing}>Stop Sharing</Button
+			>
+			<div class="mt-2 flex flex-col gap-2 md:flex-row">
+				<div class="w-1/3">
+					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Audio</h2>
+				</div>
+				<div class="w-1/3">
+					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Video</h2>
+				</div>
+				<div class="w-1/3">
+					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Screen Share</h2>
+				</div>
+			</div>
+		</div>
 	{:else}
 		<div class="w-full">
 			<DeviceSelector
@@ -200,7 +257,8 @@
 					{#if canShare}
 						<Button
 							type="submit"
-							class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white">Share</Button
+							class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-700"
+							>Share</Button
 						>
 					{/if}
 				{/await}
