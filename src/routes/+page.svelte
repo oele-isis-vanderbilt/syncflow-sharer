@@ -3,18 +3,18 @@
 	import { Button, Input, Label, P, Select } from 'flowbite-svelte';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
-	import * as livekit from 'livekit-client';
-	import { applyAction } from '$app/forms';
-	import { goto } from '$app/navigation';
+	import { Room } from 'livekit-client';
 	import DeviceSelector from '$lib/components/device-selector.svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	const activeSessions = data.sessions.filter(
-		(session) => session.status === 'Started' && session.comments === 'Created from SyncFlow Sharer'
-	);
+	const activeSessions =
+		data.sessions?.filter(
+			(session) =>
+				session.status === 'Started' && session.comments === 'Created from SyncFlow Sharer'
+		) || [];
 	let selections = activeSessions.map((session) => {
 		return {
 			value: session.id,
@@ -23,75 +23,26 @@
 	});
 	let selected = $state(selections.length !== 0 ? selections[0].value : '');
 	let identity = $state('');
-	let sharing = $state(false);
 	let selectedDeviceIds = $state({
 		audioDeviceId: '',
 		videoDeviceId: ''
 	});
 	const settings = data.settings;
 	let sessionSharingErrors = $state('');
+	let devices = $state<MediaDeviceInfo[]>([]);
 
-	async function shareDevicesToSession(token: string, livekitServerUrl: string) {
-		const room = new livekit.Room({
-			adaptiveStream: true,
-			dynacast: true,
-
-			videoCaptureDefaults: {
-				resolution: livekit.VideoPresets.h1080
-			},
-			publishDefaults: {
-				videoCodec: 'vp9'
-			}
-		});
-		room.prepareConnection(token, livekitServerUrl);
-
-		await room.connect(livekitServerUrl, token);
-		if (settings?.enableAudio) {
-			await room.localParticipant.setMicrophoneEnabled(true, {
-				deviceId: selectedDeviceIds.audioDeviceId
-			});
-		}
-
-		if (settings?.enableCamera) {
-			await room.localParticipant.setCameraEnabled(
-				true,
-				{
-					deviceId: selectedDeviceIds.videoDeviceId,
-					resolution: livekit.VideoPresets.h1080
-				},
-				{
-					videoCodec: 'vp9',
-					name: `${identity}'s-camera`,
-					simulcast: true
-				}
-			);
-		}
-
-		if (settings?.enableScreenShare) {
-			await room.localParticipant.setScreenShareEnabled(true);
-		}
-
-		sharing = true;
-
-		room.on('disconnected', () => {
-			goto('/', {
-				invalidateAll: true
-			});
-		});
-	}
-
-	onMount(() => {
+	onMount(async () => {
 		if (browser) {
 			const userDeviceSelections = window.localStorage.getItem('userDeviceSelections');
 			if (userDeviceSelections) {
 				selectedDeviceIds = JSON.parse(userDeviceSelections);
 			}
+			devices = await Room.getLocalDevices();
 		}
 	});
 
 	const deviceExists = async (deviceId: string) => {
 		if (browser) {
-			const devices = await livekit.Room.getLocalDevices();
 			return devices.map((d) => d.deviceId).includes(deviceId);
 		} else {
 			return false;
@@ -129,6 +80,10 @@
 
 		return canShare;
 	});
+
+	function getSelectedSessionName() {
+		return selections.find((session) => session.value === selected)?.name;
+	}
 </script>
 
 <div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
@@ -142,8 +97,6 @@
 				null,
 				2
 			)}</pre>
-	{:else if sharing}
-		<p class="text-black dark:text-gray-300">You are sharing to session {selected} as {identity}</p>
 	{:else}
 		<div class="w-full">
 			<DeviceSelector
@@ -160,12 +113,24 @@
 				class="mt-2 w-full p-2"
 				method="POST"
 				action="?/generateSessionToken"
-				use:enhance={(params) => {
+				use:enhance={(/*params*/) => {
 					return async ({ result }) => {
 						if (result.type === 'success') {
-							const tokenDetails = result.data.token;
-							await shareDevicesToSession(tokenDetails.token, tokenDetails.livekitServerUrl);
-							applyAction(result);
+							const tokenDetails = result.data?.token;
+							if (tokenDetails) {
+								let url = new URL('session', window.location.origin);
+								url.searchParams.set('token', tokenDetails.token as string);
+								url.searchParams.set('livekitUrl', tokenDetails.livekitServerUrl as string);
+								url.searchParams.set('sessionName', getSelectedSessionName() || '');
+								url.searchParams.set('videoDeviceId', selectedDeviceIds.videoDeviceId);
+								url.searchParams.set('audioDeviceId', selectedDeviceIds.audioDeviceId);
+								url.searchParams.set('identity', identity);
+								url.searchParams.set(
+									'screenShareEnabled',
+									settings?.enableScreenShare ? 'true' : 'false'
+								);
+								window.location.href = url.toString();
+							}
 						}
 					};
 				}}
@@ -200,7 +165,8 @@
 					{#if canShare}
 						<Button
 							type="submit"
-							class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white">Share</Button
+							class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-700"
+							>Share</Button
 						>
 					{/if}
 				{/await}
