@@ -95,11 +95,13 @@
 	</form>
 	<div class="flex flex-row items-center justify-between">
 		<h2 class="mt-5 font-semibold text-gray-900 md:text-2xl dark:text-gray-300">Session Manager</h2>
-		<form method="POST" action="?/createSession" use:enhance>
-			<Button type="submit" class="mt-6 rounded-lg bg-red-700 px-4 py-2 font-semibold text-white"
-				>Create New Session</Button
-			>
-		</form>
+		{#if currentSettings.enabled}
+			<form method="POST" action="?/createSession" use:enhance>
+				<Button type="submit" class="mt-6 rounded-lg bg-red-700 px-4 py-2 font-semibold text-white"
+					>Create New Session</Button
+				>
+			</form>
+		{/if}
 	</div>
 	{#if !form?.success && form?.errorType === 'sessionExists'}
 		<p class="text-red-800">{form?.message}</p>

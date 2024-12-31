@@ -25,6 +25,7 @@
 	const subscrbedVideoTracks = $state<Record<string, TrackSubscription>>({});
 	let fullScreen = $state(false);
 	let fullScreenText = $state('');
+	let room = $state<livekit.Room | null>(null);
 
 	function handleTrackUnsubscribed(
 		track: livekit.RemoteTrack,
@@ -85,7 +86,7 @@
 	}
 
 	onMount(async () => {
-		const room = new livekit.Room({
+		room = new livekit.Room({
 			adaptiveStream: true,
 			dynacast: true,
 			videoCaptureDefaults: {
@@ -137,6 +138,27 @@
 						track.track.detach(node);
 					}
 				};
+			}
+		});
+	}
+
+	function appendDataMessages(node: HTMLDivElement) {
+		$effect(() => {
+			if (node) {
+				const encoder = new TextDecoder();
+				room?.on('dataReceived', (payload: Uint8Array, participant, kind, topic) => {
+					const span = document.createElement('span');
+
+					let stringContent = encoder.decode(payload);
+
+					const timestamp = new Date().toLocaleString();
+
+					span.className = 'block font-mono text-sm p-1 border-b break-words max-w-full';
+					span.textContent = `[${timestamp}] ${participant?.identity}: ${stringContent}`;
+
+					node.appendChild(span);
+					node.scroll({ top: node.scrollHeight, behavior: 'smooth' });
+				});
 			}
 		});
 	}
@@ -211,5 +233,6 @@
 		{/each}
 	</div>
 	<h3 class="font-semibold text-gray-900 md:text-xl dark:text-gray-300">Text Streams</h3>
+	<div class="flex h-96 flex-col overflow-auto bg-gray-950 text-white" use:appendDataMessages></div>
 	<div class="mb-10"></div>
 </div>
