@@ -7,6 +7,7 @@
 	import DeviceSelector from '$lib/components/device-selector.svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import CodecSelector from '$lib/components/codec-selector.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -23,9 +24,10 @@
 	});
 	let selected = $state(selections.length !== 0 ? selections[0].value : '');
 	let identity = $state('');
-	let selectedDeviceIds = $state({
+	let userSelections = $state({
 		audioDeviceId: '',
-		videoDeviceId: ''
+		videoDeviceId: '',
+		videoCodec: ''
 	});
 	const settings = data.settings;
 	let sessionSharingErrors = $state('');
@@ -33,9 +35,9 @@
 
 	onMount(async () => {
 		if (browser) {
-			const userDeviceSelections = window.localStorage.getItem('userDeviceSelections');
-			if (userDeviceSelections) {
-				selectedDeviceIds = JSON.parse(userDeviceSelections);
+			const selections = window.localStorage.getItem('userSelections');
+			if (selections) {
+				userSelections = JSON.parse(selections);
 			}
 			devices = await Room.getLocalDevices();
 		}
@@ -51,7 +53,7 @@
 
 	$effect(() => {
 		if (browser) {
-			localStorage.setItem('userDeviceSelections', JSON.stringify(selectedDeviceIds));
+			localStorage.setItem('userSelections', JSON.stringify(userSelections));
 		}
 	});
 
@@ -62,13 +64,13 @@
 			canShare = false;
 		}
 
-		if (settings?.enableCamera && !(await deviceExists(selectedDeviceIds.videoDeviceId))) {
-			missingDevices.push(selectedDeviceIds.videoDeviceId);
+		if (settings?.enableCamera && !(await deviceExists(userSelections.videoDeviceId))) {
+			missingDevices.push(userSelections.videoDeviceId);
 			canShare = false;
 		}
 
-		if (settings?.enableAudio && !(await deviceExists(selectedDeviceIds.audioDeviceId))) {
-			missingDevices.push(selectedDeviceIds.audioDeviceId);
+		if (settings?.enableAudio && !(await deviceExists(userSelections.audioDeviceId))) {
+			missingDevices.push(userSelections.audioDeviceId);
 			canShare = false;
 		}
 
@@ -100,9 +102,12 @@
 	{:else}
 		<div class="w-full">
 			<DeviceSelector
-				bind:audioDeviceId={selectedDeviceIds.audioDeviceId}
-				bind:videoDeviceId={selectedDeviceIds.videoDeviceId}
+				bind:audioDeviceId={userSelections.audioDeviceId}
+				bind:videoDeviceId={userSelections.videoDeviceId}
 			/>
+		</div>
+		<div class="w-full">
+			<CodecSelector bind:selectedVideoCodec={userSelections.videoCodec} />
 		</div>
 		<h2 class="mt-5 text-lg font-semibold text-gray-900 dark:text-gray-300">
 			Select Session to Share
@@ -122,13 +127,14 @@
 								url.searchParams.set('token', tokenDetails.token as string);
 								url.searchParams.set('livekitUrl', tokenDetails.livekitServerUrl as string);
 								url.searchParams.set('sessionName', getSelectedSessionName() || '');
-								url.searchParams.set('videoDeviceId', selectedDeviceIds.videoDeviceId);
-								url.searchParams.set('audioDeviceId', selectedDeviceIds.audioDeviceId);
+								url.searchParams.set('videoDeviceId', userSelections.videoDeviceId);
+								url.searchParams.set('audioDeviceId', userSelections.audioDeviceId);
 								url.searchParams.set('identity', identity);
 								url.searchParams.set(
 									'screenShareEnabled',
 									settings?.enableScreenShare ? 'true' : 'false'
 								);
+								url.searchParams.set('videoCodec', userSelections.videoCodec);
 								window.location.href = url.toString();
 							}
 						}
