@@ -29,7 +29,7 @@
 				resolution: VideoPresets.h1080
 			},
 			publishDefaults: {
-				videoCodec: 'vp9'
+				videoCodec: data.sharingDetails.videoCodec || 'h264'
 			},
 			stopLocalTrackOnUnpublish: true
 		});
@@ -49,7 +49,7 @@
 					resolution: VideoPresets.h1080
 				},
 				{
-					videoCodec: 'vp9',
+					videoCodec: data.sharingDetails.videoCodec || 'h264',
 					name: `${data.sharingDetails.identity}'s-camera`,
 					simulcast: true
 				}
