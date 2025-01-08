@@ -8,7 +8,7 @@
 	let { children, data }: { data: LayoutData; children: Snippet } = $props();
 </script>
 
-<ModeWatcher />
+<ModeWatcher track={false} defaultMode={'dark'} />
 <header
 	class="sticky top-0 z-40 mx-auto w-full flex-none border-b border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-900"
 >
