@@ -23,8 +23,6 @@
 
 	const subscribedAudioTracks = $state<Record<string, TrackSubscription>>({});
 	const subscrbedVideoTracks = $state<Record<string, TrackSubscription>>({});
-	let fullScreen = $state(false);
-	let fullScreenText = $state('');
 	let room = $state<livekit.Room | null>(null);
 
 	function handleTrackUnsubscribed(
@@ -172,7 +170,6 @@
 			Welcome to Session {data.session.name}!, {data.token.identity}
 		</h2>
 		<div class="flex flex-row items-center justify-between text-center">
-			<h3 class="font-semibold text-gray-900 md:text-xl dark:text-gray-300">{fullScreenText}</h3>
 			<div class="h-5 w-5">
 				<button class="text-gray-900 dark:text-gray-300">
 					<MdFullscreen role="button" class="p-2 text-xs text-black dark:text-gray-300" />
@@ -202,8 +199,6 @@
 							<button
 								onclick={() => {
 									onRequest();
-									fullScreen = true;
-									fullScreenText = trackInfo.participant;
 								}}
 							>
 								<MdFullscreen role="button" class="p-2 text-xs" />
