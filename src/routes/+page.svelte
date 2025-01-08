@@ -27,7 +27,9 @@
 	let userSelections = $state({
 		audioDeviceId: '',
 		videoDeviceId: '',
-		videoCodec: ''
+		videoCodec: '',
+		videoPreset: '',
+		audioPreset: ''
 	});
 	const settings = data.settings;
 	let sessionSharingErrors = $state('');
@@ -39,6 +41,19 @@
 			if (selections) {
 				userSelections = JSON.parse(selections);
 			}
+
+			if (!userSelections.videoPreset) {
+				userSelections.videoPreset = 'h1080';
+			}
+
+			if (!userSelections.audioPreset) {
+				userSelections.audioPreset = 'musicHighQuality';
+			}
+
+			if (!userSelections.videoCodec) {
+				userSelections.videoCodec = 'h264';
+			}
+
 			devices = await Room.getLocalDevices();
 		}
 	});
@@ -107,7 +122,11 @@
 			/>
 		</div>
 		<div class="w-full">
-			<CodecSelector bind:selectedVideoCodec={userSelections.videoCodec} />
+			<CodecSelector
+				bind:selectedVideoCodec={userSelections.videoCodec}
+				bind:selectedAudioPreset={userSelections.audioPreset}
+				bind:selectedVideoPreset={userSelections.videoPreset}
+			/>
 		</div>
 		<h2 class="mt-5 text-lg font-semibold text-gray-900 dark:text-gray-300">
 			Select Session to Share
@@ -135,6 +154,8 @@
 									settings?.enableScreenShare ? 'true' : 'false'
 								);
 								url.searchParams.set('videoCodec', userSelections.videoCodec);
+								url.searchParams.set('videoPreset', userSelections.videoPreset);
+								url.searchParams.set('audioPreset', userSelections.audioPreset);
 								window.location.href = url.toString();
 							}
 						}
