@@ -10,6 +10,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	const screnShareEnabled = url.searchParams.get('screenShareEnabled');
 	const identity = url.searchParams.get('identity');
 	const videoCodec = url.searchParams.get('videoCodec') || 'h264';
+	const audioPreset = url.searchParams.get('audioPreset') || 'musicHighQuality';
+	const videoPreset = url.searchParams.get('videoPreset') || 'h1080';
 
 	if (!lkUrl || !token || !sessionName) {
 		return error(400, 'Missing required parameters');
@@ -26,7 +28,9 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			videoDeviceId: videoDeviceId,
 			audioDeviceId: audioDeviceId,
 			screenShareEnabled: screnShareEnabled,
-			videoCodec: videoCodec
+			videoCodec: videoCodec,
+			audioPreset: audioPreset,
+			videoPreset: videoPreset
 		}
 	};
 };

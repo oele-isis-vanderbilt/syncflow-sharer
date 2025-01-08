@@ -2,8 +2,8 @@
 	import { Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
-	import { LocalTrack, Room, Track, VideoPresets } from 'livekit-client';
-	import { goto } from '$app/navigation';
+	import { LocalTrack, Room, Track, type TrackPublishDefaults } from 'livekit-client';
+	import { AudioPresets, VideoPresets } from 'livekit-client';
 
 	let { data }: { data: PageData } = $props();
 	let devices = $state<MediaDeviceInfo[]>([]);
@@ -24,20 +24,33 @@
 		room = new Room({
 			adaptiveStream: true,
 			dynacast: true,
-
 			videoCaptureDefaults: {
-				resolution: VideoPresets.h1080
+				resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080')
+			},
+			audioCaptureDefaults: {
+				sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality').maxBitrate
 			},
 			publishDefaults: {
-				videoCodec: data.sharingDetails.videoCodec || 'h264'
-			},
+				videoCodec: data.sharingDetails.videoCodec || 'h264',
+				audioPreset: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
+			} satisfies TrackPublishDefaults,
 			stopLocalTrackOnUnpublish: true
 		});
 		await room.connect(livekitServerUrl, token);
 
+		if (data.sharingDetails.screenShareEnabled === 'true') {
+			await room.localParticipant.setScreenShareEnabled(true, {
+				contentHint: 'detail',
+				audio: false
+			});
+		}
+
 		if (data.sharingDetails.audioDeviceId) {
 			await room.localParticipant.setMicrophoneEnabled(true, {
-				deviceId: data.sharingDetails.audioDeviceId
+				deviceId: data.sharingDetails.audioDeviceId,
+				sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
+					.maxBitrate,
+				channelCount: 1
 			});
 		}
 
@@ -56,18 +69,47 @@
 			);
 		}
 
-		if (data.sharingDetails.screenShareEnabled === 'true') {
-			await room.localParticipant.setScreenShareEnabled(true, {
-				contentHint: 'detail',
-				audio: false
-			});
-		}
-
 		publicationsReady = true;
 
 		room.on('disconnected', async () => {
 			window.location.href = '/';
 		});
+	}
+
+	function getAudioPreset(preset: string) {
+		switch (preset) {
+			case 'telephone':
+				return AudioPresets.telephone;
+			case 'speech':
+				return AudioPresets.speech;
+			case 'music':
+				return AudioPresets.music;
+			case 'musicStereo':
+				return AudioPresets.musicStereo;
+			case 'musicHighQuality':
+				return AudioPresets.musicHighQuality;
+			case 'musicHighQualityStereo':
+				return AudioPresets.musicHighQualityStereo;
+			default:
+				return AudioPresets.musicHighQuality;
+		}
+	}
+
+	function getVideoPreset(preset: string) {
+		switch (preset) {
+			case 'h2160':
+				return VideoPresets.h2160;
+			case 'h1080':
+				return VideoPresets.h1080;
+			case 'h720':
+				return VideoPresets.h720;
+			case 'h540':
+				return VideoPresets.h540;
+			case 'h360':
+				return VideoPresets.h360;
+			default:
+				return VideoPresets.h1080;
+		}
 	}
 
 	async function stopPublishing() {
