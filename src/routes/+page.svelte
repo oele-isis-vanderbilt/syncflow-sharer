@@ -32,7 +32,6 @@
 		audioPreset: ''
 	});
 	const settings = data.settings;
-	let sessionSharingErrors = $state('');
 	let devices = $state<MediaDeviceInfo[]>([]);
 
 	onMount(async () => {
@@ -58,7 +57,7 @@
 		}
 	});
 
-	const deviceExists = async (deviceId: string) => {
+	const deviceExists = (deviceId: string) => {
 		if (browser) {
 			return devices.map((d) => d.deviceId).includes(deviceId);
 		} else {
@@ -72,31 +71,33 @@
 		}
 	});
 
-	let canShareSession = $derived.by(async () => {
+	let sharingState = $derived.by(() => {
 		let missingDevices: string[] = [];
 		let canShare = true;
 		if (!identity) {
 			canShare = false;
 		}
 
-		if (settings?.enableCamera && !(await deviceExists(userSelections.videoDeviceId))) {
+		if (settings?.enableCamera && !deviceExists(userSelections.videoDeviceId)) {
 			missingDevices.push(userSelections.videoDeviceId);
 			canShare = false;
 		}
 
-		if (settings?.enableAudio && !(await deviceExists(userSelections.audioDeviceId))) {
+		if (settings?.enableAudio && !deviceExists(userSelections.audioDeviceId)) {
 			missingDevices.push(userSelections.audioDeviceId);
 			canShare = false;
 		}
+		let sessionSharingErrors = null;
 
 		if (missingDevices.length != 0) {
 			sessionSharingErrors = `Please select audio/video devices before sharing. Devices with ${missingDevices.join(', ')} don't exist`;
-		} else {
-			sessionSharingErrors = '';
 		}
 
-		return canShare;
+		return { canShare, sessionSharingErrors };
 	});
+
+	let canShareSession = $derived(sharingState.canShare);
+	let sessionSharingErrors = $derived(sharingState.sessionSharingErrors);
 
 	function getSelectedSessionName() {
 		return selections.find((session) => session.value === selected)?.name;
@@ -153,6 +154,8 @@
 									'screenShareEnabled',
 									settings?.enableScreenShare ? 'true' : 'false'
 								);
+								url.searchParams.set('enableCamera', settings?.enableCamera ? 'true' : 'false');
+								url.searchParams.set('enableAudio', settings?.enableAudio ? 'true' : 'false');
 								url.searchParams.set('videoCodec', userSelections.videoCodec);
 								url.searchParams.set('videoPreset', userSelections.videoPreset);
 								url.searchParams.set('audioPreset', userSelections.audioPreset);
@@ -186,17 +189,14 @@
 				{#if sessionSharingErrors}
 					<span class="text-sm text-red-500">{sessionSharingErrors}</span>
 				{/if}
-				{#await canShareSession}
-					<div></div>
-				{:then canShare}
-					{#if canShare}
-						<Button
-							type="submit"
-							class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-700"
-							>Share</Button
-						>
-					{/if}
-				{/await}
+
+				{#if canShareSession}
+					<Button
+						type="submit"
+						class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-700"
+						>Share</Button
+					>
+				{/if}
 			</form>
 		{/if}
 		{#if selections.length === 0}
