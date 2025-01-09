@@ -38,14 +38,23 @@
 		});
 		await room.connect(livekitServerUrl, token);
 
-		if (data.sharingDetails.screenShareEnabled === 'true') {
-			await room.localParticipant.setScreenShareEnabled(true, {
-				contentHint: 'detail',
-				audio: false
-			});
+		if (data.sharingDetails.screenShareEnabled) {
+			await room.localParticipant.setScreenShareEnabled(
+				true,
+				{
+					contentHint: 'detail',
+					audio: false,
+					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080')
+				},
+				{
+					videoCodec: data.sharingDetails.videoCodec || 'h264',
+					name: `${data.sharingDetails.identity}'s-screen`,
+					simulcast: true
+				}
+			);
 		}
 
-		if (data.sharingDetails.audioDeviceId) {
+		if (data.sharingDetails.enableAudio && data.sharingDetails.audioDeviceId) {
 			await room.localParticipant.setMicrophoneEnabled(true, {
 				deviceId: data.sharingDetails.audioDeviceId,
 				sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
@@ -54,12 +63,12 @@
 			});
 		}
 
-		if (data.sharingDetails.videoDeviceId) {
+		if (data.sharingDetails.enableCamera && data.sharingDetails.videoDeviceId) {
 			await room.localParticipant.setCameraEnabled(
 				true,
 				{
 					deviceId: data.sharingDetails.videoDeviceId,
-					resolution: VideoPresets.h1080
+					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080')
 				},
 				{
 					videoCodec: data.sharingDetails.videoCodec || 'h264',
@@ -177,17 +186,20 @@
 		</h2>
 		{#if data.sharingDetails.audioDeviceId}
 			<p class="text-black dark:text-gray-300">
-				Audio Device: {getSelectedDeviceName(data.sharingDetails.audioDeviceId)}
+				Audio Device: {getSelectedDeviceName(data.sharingDetails.audioDeviceId)} (Enabled: {data
+					.sharingDetails.enableAudio})
 			</p>
 		{/if}
 		{#if data.sharingDetails.videoDeviceId}
 			<p class="text-black dark:text-gray-300">
-				Video Device: {getSelectedDeviceName(data.sharingDetails.videoDeviceId)}
+				Video Device: {getSelectedDeviceName(data.sharingDetails.videoDeviceId)} (Enabled: {data
+					.sharingDetails.enableCamera})
 			</p>
 		{/if}
-		{#if data.sharingDetails.screenShareEnabled === 'true'}
-			<p class="text-black dark:text-gray-300">Screen Share: Enabled</p>
-		{/if}
+
+		<p class="text-black dark:text-gray-300">
+			Screen Share: {data.sharingDetails.screenShareEnabled ? 'Enabled' : 'Disabled'}
+		</p>
 		<Button
 			class="mt-4 w-full rounded bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-700"
 			on:click={stopPublishing}>Stop Sharing</Button
@@ -197,18 +209,34 @@
 				<div class="w-full items-center md:w-1/3">
 					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Audio</h2>
 					<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
-						<audio use:attachLocalAudio class="w-full" controls></audio>
+						{#if data.sharingDetails.enableAudio}
+							<audio use:attachLocalAudio class="w-full" controls></audio>
+						{:else}
+							<p class="text-black dark:text-gray-300">Audio Disabled</p>
+						{/if}
 					</div>
 				</div>
 				<div class="w-full md:w-1/3">
 					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Video</h2>
-					<!-- svelte-ignore a11y_media_has_caption -->
-					<video use:attachLocalVideo class="h-32 w-full"></video>
+					{#if data.sharingDetails.enableCamera}
+						<!-- svelte-ignore a11y_media_has_caption -->
+						<video use:attachLocalVideo class="h-32 w-full"></video>
+					{:else}
+						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
+							<p class="text-black dark:text-gray-300">Video Disabled</p>
+						</div>
+					{/if}
 				</div>
 				<div class="w-full md:w-1/3">
 					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Screen Share</h2>
-					<!-- svelte-ignore a11y_media_has_caption -->
-					<video use:attachLocalScreen class="h-32 w-full"></video>
+					{#if data.sharingDetails.screenShareEnabled}
+						<!-- svelte-ignore a11y_media_has_caption -->
+						<video use:attachLocalScreen class="h-32 w-full"></video>
+					{:else}
+						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
+							<p class="text-black dark:text-gray-300">Screen Share Disabled</p>
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/if}
