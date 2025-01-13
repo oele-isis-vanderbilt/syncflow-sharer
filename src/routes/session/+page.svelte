@@ -55,12 +55,20 @@
 		}
 
 		if (data.sharingDetails.enableAudio && data.sharingDetails.audioDeviceId) {
-			await room.localParticipant.setMicrophoneEnabled(true, {
-				deviceId: data.sharingDetails.audioDeviceId,
-				sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
-					.maxBitrate,
-				channelCount: 1
-			});
+			await room.localParticipant.setMicrophoneEnabled(
+				true,
+				{
+					deviceId: data.sharingDetails.audioDeviceId,
+					sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
+						.maxBitrate,
+					channelCount: 1
+				},
+				{
+					audioPreset: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality'),
+					dtx: false,
+					red: false
+				}
+			);
 		}
 
 		if (data.sharingDetails.enableCamera && data.sharingDetails.videoDeviceId) {
