@@ -44,7 +44,8 @@
 				{
 					contentHint: 'detail',
 					audio: false,
-					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080')
+					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080'),
+					video: { displaySurface: 'monitor' }
 				},
 				{
 					videoCodec: data.sharingDetails.videoCodec || 'h264',
