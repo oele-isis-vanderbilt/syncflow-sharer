@@ -23,10 +23,6 @@
 			console.error(e);
 		}
 	});
-
-	$effect(() => {
-		console.log($state.snapshot(audioDeviceIds), $state.snapshot(videoDeviceIds));
-	});
 </script>
 
 <h3 class="text-lg font-bold text-gray-900 dark:text-gray-300">Select Devices</h3>

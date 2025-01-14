@@ -113,7 +113,7 @@
 
 		await room.localParticipant.publishTrack(localVideoTrack, {
 			videoCodec: data.sharingDetails.videoCodec || 'h264',
-			name: `${data.sharingDetails.identity}'s-camera`,
+			name: `${getSelectedDeviceName(videoDeviceId)}-camera`,
 			simulcast: true,
 			source: Track.Source.Camera
 		});
@@ -169,48 +169,102 @@
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 	}
 
-	function attachVideoSource(source: Track.Source, node: HTMLVideoElement) {
+	function attachVideoSources(source: Track.Source, node: HTMLDivElement) {
 		$effect(() => {
 			if (node && room) {
-				const publication = room.localParticipant
+				const publications = room.localParticipant
 					.getTrackPublications()
-					.find((t) => t.track?.kind === Track.Kind.Video && t.track?.source === source);
+					.filter((t) => t.track?.kind === Track.Kind.Video && t.track?.source === source);
 
-				if (publication) {
-					publication.track?.attach(node);
-				}
-				return () => {
-					if (publication) {
-						publication.track?.detach(node);
+				const trackInfoDiv = document.createElement('div');
+				trackInfoDiv.className = 'flex flex-col gap-2';
+				node.appendChild(trackInfoDiv);
+
+				publications.map((publication) => {
+					if (publication.track) {
+						const video = publication.track.attach();
+						video.id = publication.track.sid || '';
+						video.className = 'h-32 w-full';
+						const span = document.createElement('span');
+						span.className = 'text-black dark:text-gray-300';
+						span.textContent = publication.trackName || '';
+						trackInfoDiv.appendChild(video);
+						trackInfoDiv.appendChild(span);
 					}
+				});
+
+				return () => {
+					publications.map((publication) => {
+						if (publication.track) {
+							const video = document.getElementById(
+								publication.track?.sid || ''
+							) as HTMLMediaElement;
+							if (video) {
+								publication.track.detach(video);
+								video.remove();
+							}
+
+							if (trackInfoDiv) {
+								trackInfoDiv.remove();
+							}
+						}
+					});
 				};
 			}
 		});
 	}
 
-	function attachAudioSource(node: HTMLAudioElement) {
+	function attachAudioSource(node: HTMLDivElement) {
 		$effect(() => {
 			if (node && room) {
-				const publication = room.localParticipant
+				const publications = room.localParticipant
 					.getTrackPublications()
-					.find((t) => t.track?.kind === Track.Kind.Audio);
+					.filter((t) => t.track?.kind === Track.Kind.Audio);
 
-				if (publication) {
-					publication.track?.attach(node);
-					node.muted = true;
-				}
-				return () => {
-					if (publication) {
-						publication.track?.detach(node);
+				const trackInfoDiv = document.createElement('div');
+				trackInfoDiv.className = 'flex flex-col gap-2';
+				node.appendChild(trackInfoDiv);
+
+				publications.map((publication) => {
+					if (publication.track) {
+						const audio = publication.track.attach();
+						audio.id = publication.track.sid || '';
+						// audio.className = 'h-32 w-full';
+						audio.controls = true;
+						audio.autoplay = false;
+						audio.muted = true;
+						const span = document.createElement('span');
+						span.className = 'text-black dark:text-gray-300';
+						span.textContent = publication.trackName || '';
+						trackInfoDiv.appendChild(audio);
+						trackInfoDiv.appendChild(span);
 					}
+				});
+
+				return () => {
+					publications.map((publication) => {
+						if (publication.track) {
+							const audio = document.getElementById(
+								publication.track?.sid || ''
+							) as HTMLMediaElement;
+							if (audio) {
+								publication.track.detach(audio);
+								audio.remove();
+							}
+
+							if (trackInfoDiv) {
+								trackInfoDiv.remove();
+							}
+						}
+					});
 				};
 			}
 		});
 	}
 
-	const attachLocalVideo = attachVideoSource.bind(null, Track.Source.Camera);
-	const attachLocalScreen = attachVideoSource.bind(null, Track.Source.ScreenShare);
-	const attachLocalAudio = attachAudioSource;
+	const attachLocalVideos = attachVideoSources.bind(null, Track.Source.Camera);
+	const attachLocalScreen = attachVideoSources.bind(null, Track.Source.ScreenShare);
+	const attachLocalAudios = attachAudioSource;
 </script>
 
 <div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
@@ -241,20 +295,24 @@
 		{#if publicationsReady}
 			<div class="mt-2 flex flex-col gap-2 md:flex-row">
 				<div class="w-full items-center md:w-1/3">
-					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Audio</h2>
-					<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
-						{#if data.sharingDetails.enableAudio}
-							<audio use:attachLocalAudio class="w-full" controls></audio>
-						{:else}
-							<p class="text-black dark:text-gray-300">Audio Disabled</p>
-						{/if}
-					</div>
+					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Audio Tracks</h2>
+					{#if data.sharingDetails.enableAudio}
+						<!-- <audio use:attachLocalAudio class="w-full" controls></audio> -->
+						<div
+							use:attachLocalAudios
+							class="flex flex-col items-center justify-center gap-2 dark:bg-gray-700"
+						></div>
+					{:else}
+						<p class="text-black dark:text-gray-300">Audio Disabled</p>
+					{/if}
 				</div>
 				<div class="w-full md:w-1/3">
-					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Video</h2>
+					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Video Tracks</h2>
 					{#if data.sharingDetails.enableCamera}
-						<!-- svelte-ignore a11y_media_has_caption -->
-						<video use:attachLocalVideo class="h-32 w-full"></video>
+						<div
+							use:attachLocalVideos
+							class="flex flex-col items-center justify-center gap-2 dark:bg-gray-700"
+						></div>
 					{:else}
 						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
 							<p class="text-black dark:text-gray-300">Video Disabled</p>
@@ -265,7 +323,10 @@
 					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Screen Share</h2>
 					{#if data.sharingDetails.screenShareEnabled}
 						<!-- svelte-ignore a11y_media_has_caption -->
-						<video use:attachLocalScreen class="h-32 w-full"></video>
+						<div
+							use:attachLocalScreen
+							class="flex flex-col items-center justify-center dark:bg-gray-700"
+						></div>
 					{:else}
 						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
 							<p class="text-black dark:text-gray-300">Screen Share Disabled</p>
