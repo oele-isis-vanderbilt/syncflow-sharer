@@ -2,7 +2,14 @@
 	import { Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
-	import { LocalTrack, Room, Track, type TrackPublishDefaults } from 'livekit-client';
+	import {
+		createLocalAudioTrack,
+		createLocalVideoTrack,
+		LocalTrack,
+		Room,
+		Track,
+		type TrackPublishDefaults
+	} from 'livekit-client';
 	import { AudioPresets, VideoPresets } from 'livekit-client';
 
 	let { data }: { data: PageData } = $props();
@@ -55,35 +62,23 @@
 			);
 		}
 
-		if (data.sharingDetails.enableAudio && data.sharingDetails.audioDeviceId) {
-			await room.localParticipant.setMicrophoneEnabled(
-				true,
-				{
-					deviceId: data.sharingDetails.audioDeviceId,
-					sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
-						.maxBitrate,
-					channelCount: 1
-				},
-				{
-					audioPreset: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality'),
-					dtx: false,
-					red: false
-				}
+		if (data.sharingDetails.enableAudio && data.sharingDetails.audioDeviceIds.length > 0) {
+			await Promise.all(
+				data.sharingDetails.audioDeviceIds.map((audioDeviceId) => {
+					if (room) {
+						return publishAudioTrack(room, audioDeviceId);
+					}
+				})
 			);
 		}
 
-		if (data.sharingDetails.enableCamera && data.sharingDetails.videoDeviceId) {
-			await room.localParticipant.setCameraEnabled(
-				true,
-				{
-					deviceId: data.sharingDetails.videoDeviceId,
-					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080')
-				},
-				{
-					videoCodec: data.sharingDetails.videoCodec || 'h264',
-					name: `${data.sharingDetails.identity}'s-camera`,
-					simulcast: true
-				}
+		if (data.sharingDetails.enableCamera && data.sharingDetails.videoDeviceIds.length > 0) {
+			await Promise.all(
+				data.sharingDetails.videoDeviceIds.map((videoDeviceId) => {
+					if (room) {
+						return publishVideoTrack(room, videoDeviceId);
+					}
+				})
 			);
 		}
 
@@ -91,6 +86,36 @@
 
 		room.on('disconnected', async () => {
 			window.location.href = '/';
+		});
+	}
+
+	async function publishAudioTrack(room: Room, audioDeviceId: string) {
+		const localAudioTrack = await createLocalAudioTrack({
+			deviceId: audioDeviceId,
+			sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality').maxBitrate,
+			channelCount: 1
+		});
+
+		await room.localParticipant.publishTrack(localAudioTrack, {
+			audioPreset: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality'),
+			dtx: false,
+			red: false,
+			source: Track.Source.Microphone,
+			name: getSelectedDeviceName(audioDeviceId)
+		});
+	}
+
+	async function publishVideoTrack(room: Room, videoDeviceId: string) {
+		const localVideoTrack = await createLocalVideoTrack({
+			deviceId: videoDeviceId,
+			resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080').resolution
+		});
+
+		await room.localParticipant.publishTrack(localVideoTrack, {
+			videoCodec: data.sharingDetails.videoCodec || 'h264',
+			name: `${data.sharingDetails.identity}'s-camera`,
+			simulcast: true,
+			source: Track.Source.Camera
 		});
 	}
 
@@ -193,16 +218,16 @@
 		<h2 class="text-lg font-bold italic text-black dark:text-gray-300">
 			You are sharing to session {data.sharingDetails.sessionName} as {data.sharingDetails.identity}
 		</h2>
-		{#if data.sharingDetails.audioDeviceId}
+		{#if data.sharingDetails.audioDeviceIds.length > 0}
 			<p class="text-black dark:text-gray-300">
-				Audio Device: {getSelectedDeviceName(data.sharingDetails.audioDeviceId)} (Enabled: {data
-					.sharingDetails.enableAudio})
+				Audio Devices: {data.sharingDetails.audioDeviceIds.map(getSelectedDeviceName).join(',')} (Enabled:
+				{data.sharingDetails.enableAudio})
 			</p>
 		{/if}
-		{#if data.sharingDetails.videoDeviceId}
+		{#if data.sharingDetails.videoDeviceIds.length > 0}
 			<p class="text-black dark:text-gray-300">
-				Video Device: {getSelectedDeviceName(data.sharingDetails.videoDeviceId)} (Enabled: {data
-					.sharingDetails.enableCamera})
+				Video Devices: {data.sharingDetails.videoDeviceIds.map(getSelectedDeviceName).join(',')} (Enabled:
+				{data.sharingDetails.enableCamera})
 			</p>
 		{/if}
 

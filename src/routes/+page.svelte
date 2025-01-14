@@ -25,8 +25,8 @@
 	let selected = $state(selections.length !== 0 ? selections[0].value : '');
 	let identity = $state('');
 	let userSelections = $state({
-		audioDeviceId: '',
-		videoDeviceId: '',
+		audioDeviceIds: [],
+		videoDeviceIds: [],
 		videoCodec: '',
 		videoPreset: '',
 		audioPreset: ''
@@ -39,6 +39,13 @@
 			const selections = window.localStorage.getItem('userSelections');
 			if (selections) {
 				userSelections = JSON.parse(selections);
+				if (!Array.isArray(userSelections.audioDeviceIds)) {
+					userSelections.audioDeviceIds = [];
+				}
+
+				if (!Array.isArray(userSelections.videoDeviceIds)) {
+					userSelections.videoDeviceIds = [];
+				}
 			}
 
 			if (!userSelections.videoPreset) {
@@ -78,15 +85,23 @@
 			canShare = false;
 		}
 
-		if (settings?.enableCamera && !deviceExists(userSelections.videoDeviceId)) {
-			missingDevices.push(userSelections.videoDeviceId);
-			canShare = false;
+		if (settings?.enableCamera && userSelections.videoDeviceIds.length != 0) {
+			let missingVideoDevices = userSelections.videoDeviceIds.filter((id) => !deviceExists(id));
+			if (missingVideoDevices.length > 0) {
+				canShare = false;
+				missingDevices.push(...missingVideoDevices);
+			}
 		}
 
-		if (settings?.enableAudio && !deviceExists(userSelections.audioDeviceId)) {
-			missingDevices.push(userSelections.audioDeviceId);
-			canShare = false;
+		if (settings?.enableAudio && userSelections.audioDeviceIds.length != 0) {
+			let missingAudioDevices = userSelections.audioDeviceIds.filter((id) => !deviceExists(id));
+
+			if (missingAudioDevices.length > 0) {
+				canShare = false;
+				missingDevices.push(...missingAudioDevices);
+			}
 		}
+
 		let sessionSharingErrors = null;
 
 		if (missingDevices.length != 0) {
@@ -118,8 +133,8 @@
 	{:else}
 		<div class="w-full">
 			<DeviceSelector
-				bind:audioDeviceId={userSelections.audioDeviceId}
-				bind:videoDeviceId={userSelections.videoDeviceId}
+				bind:audioDeviceIds={userSelections.audioDeviceIds}
+				bind:videoDeviceIds={userSelections.videoDeviceIds}
 			/>
 		</div>
 		<div class="w-full">
@@ -147,8 +162,8 @@
 								url.searchParams.set('token', tokenDetails.token as string);
 								url.searchParams.set('livekitUrl', tokenDetails.livekitServerUrl as string);
 								url.searchParams.set('sessionName', getSelectedSessionName() || '');
-								url.searchParams.set('videoDeviceId', userSelections.videoDeviceId);
-								url.searchParams.set('audioDeviceId', userSelections.audioDeviceId);
+								url.searchParams.set('videoDeviceIds', userSelections.videoDeviceIds.join(','));
+								url.searchParams.set('audioDeviceIds', userSelections.audioDeviceIds.join(','));
 								url.searchParams.set('identity', identity);
 								url.searchParams.set(
 									'screenShareEnabled',
