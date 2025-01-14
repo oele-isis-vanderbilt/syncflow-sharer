@@ -5,8 +5,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	const lkUrl = url.searchParams.get('livekitUrl');
 	const token = url.searchParams.get('token');
 	const sessionName = url.searchParams.get('sessionName');
-	const videoDeviceId = url.searchParams.get('videoDeviceId');
-	const audioDeviceId = url.searchParams.get('audioDeviceId');
+	const videoDeviceIds = (url.searchParams.get('videoDeviceIds') || '').split(',');
+	const audioDeviceIds = (url.searchParams.get('audioDeviceIds') || '').split(',');
 	const screnShareEnabled = url.searchParams.get('screenShareEnabled') === 'true';
 	const identity = url.searchParams.get('identity');
 	const videoCodec = url.searchParams.get('videoCodec') || 'h264';
@@ -27,8 +27,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		sharingDetails: {
 			identity: identity,
 			sessionName: sessionName,
-			videoDeviceId: videoDeviceId,
-			audioDeviceId: audioDeviceId,
+			videoDeviceIds: videoDeviceIds,
+			audioDeviceIds: audioDeviceIds,
 			screenShareEnabled: screnShareEnabled,
 			enableAudio: enableAudio,
 			enableCamera: enableCamera,
