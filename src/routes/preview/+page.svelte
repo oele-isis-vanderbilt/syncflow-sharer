@@ -5,6 +5,7 @@
 		participant: string;
 		track: RemoteTrack;
 		kind: Track.Kind;
+		name?: string;
 	}
 </script>
 
@@ -52,7 +53,8 @@
 					participant:
 						(participant.name || participant.identity) + `(${publication.track?.source})`,
 					track,
-					kind: track.kind
+					kind: track.kind,
+					name: publication.trackName || publication.trackInfo?.name
 				};
 			}
 		} else if (track.kind === livekit.Track.Kind.Audio) {
@@ -61,7 +63,8 @@
 					participant:
 						(participant.name || participant.identity) + `(${publication.track?.source})`,
 					track,
-					kind: track.kind
+					kind: track.kind,
+					name: publication.trackName || publication.trackInfo?.name
 				};
 			}
 		}
@@ -194,7 +197,10 @@
 						<video use:attachVideo class="h-full w-full" {id}></video>
 					</div>
 					<div class="flex flex-row items-center justify-between text-center">
-						<span class="p-2 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
+						<div class="flex w-full flex-col items-center">
+							<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
+							<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
+						</div>
 						<div class="h-5 w-5 text-gray-900 dark:text-gray-300">
 							<button
 								onclick={() => {
@@ -216,13 +222,16 @@
 		bind:this={audioContainer}
 	>
 		{#each Object.entries(subscribedAudioTracks) as [id, trackInfo]}
-			<div class="flex flex-col justify-between bg-gray-200 dark:bg-gray-700" style="height:100px;">
+			<div class="flex flex-col justify-between bg-gray-200 dark:bg-gray-700" style="height:150px;">
 				<div class="flex-1 p-2">
 					<!-- svelte-ignore a11y_media_has_caption -->
 					<audio use:attachAudio class="h-full w-full dark:bg-gray-700" controls {id}></audio>
 				</div>
 				<div class="flex flex-row items-center justify-between text-center dark:bg-gray-700">
-					<span class="p-2 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
+					<div class="flex w-full flex-col items-center">
+						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
+						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
+					</div>
 				</div>
 			</div>
 		{/each}
