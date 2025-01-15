@@ -7,7 +7,8 @@
 	import type { ActionData } from '../$types';
 
 	const { data, form }: { data: PageData; form: ActionData } = $props();
-	const sessions = $derived(data.sessions);
+	const sessions = $derived(data.sessions.active);
+	const endedSessions = $derived(data.sessions.ended);
 
 	let currentSettings = $derived(data.settings);
 	let settingsState = $state({
@@ -116,7 +117,7 @@
 					<li
 						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 md:flex-row dark:bg-gray-800"
 					>
-						<span class="hidden text-black md:block dark:text-gray-300">{session.name}</span>
+						<span class="text-black md:block dark:text-gray-300">{session.name}</span>
 						<span class="hidden text-black md:block dark:text-gray-300">{session.id}</span>
 
 						<button
@@ -127,6 +128,34 @@
 							<input type="hidden" name="sessionId" value={session.id} />
 							<Button type="submit" class="rounded-lg bg-red-700 px-4 py-2 text-white"
 								>End Session</Button
+							>
+						</form>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
+
+	<h2 class="mt-5 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Ended Sessions</h2>
+	<div class="mb-20 mt-6">
+		{#if endedSessions.length === 0}
+			<p class="text-black dark:text-gray-300">No ended sessions</p>
+		{:else}
+			<ul class="flex flex-col gap-2 overflow-auto text-center">
+				{#each endedSessions as session}
+					<li
+						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
+					>
+						<span class="flex-1 text-black md:block dark:text-gray-300">{session.name}</span>
+						<span class="hidden flex-1 text-black md:block dark:text-gray-300">{session.id}</span>
+						<button
+							class="flex-1 rounded-lg bg-blue-700 px-4 py-2 text-white"
+							onclick={() => goto(`/recordings?sessionId=${session.id}`)}>View Recordings</button
+						>
+						<form method="POST" action="?/deleteSession" use:enhance>
+							<input type="hidden" name="sessionId" value={session.id} />
+							<Button type="submit" class="flex-1 rounded-lg bg-red-700 px-4 py-2 text-white"
+								>Delete Session</Button
 							>
 						</form>
 					</li>

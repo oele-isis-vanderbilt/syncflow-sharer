@@ -1,20 +1,33 @@
-import type { PageServerLoad, Actions } from './$types';
+import type { PageServerLoad } from './$types';
 import { syncFlowSettings } from '$lib/server/settings';
 import { getProjectClient } from '$lib/server/syncflow-client';
 
-const getActiveSessions = async () => {
+const getSessions = async () => {
 	return (await getProjectClient().getSessions())
 		.map((sessions) => {
-			return sessions.filter(
-				(session) =>
-					session.status === 'Started' && session.comments === 'Created from SyncFlow Sharer'
-			);
+			return {
+				active: sessions.filter(
+					(session) =>
+						session.status === 'Started' && session.comments === 'Created from SyncFlow Sharer'
+				),
+				ended: sessions
+					.filter(
+						(session) =>
+							session.status !== 'Started' && session.comments === 'Created from SyncFlow Sharer'
+					)
+					.sort((a, b) => {
+						return a.startedAt > b.startedAt ? -1 : 1;
+					})
+			};
 		})
-		.unwrapOr([]);
+		.unwrapOr({
+			active: [],
+			ended: []
+		});
 };
 
 export const load: PageServerLoad = async ({ params }) => {
-	const sessions = await getActiveSessions();
+	const sessions = await getSessions();
 	return {
 		settings: syncFlowSettings.toJSON(),
 		sessions: sessions
@@ -44,7 +57,7 @@ export const actions = {
 		};
 	},
 	createSession: async ({}) => {
-		const activeSessions = await getActiveSessions();
+		const activeSessions = (await getSessions()).active;
 
 		const sessionNames = activeSessions.map((session) => session.name);
 
@@ -79,7 +92,7 @@ export const actions = {
 			.unwrapOrElse((error) => {
 				return {
 					success: false,
-					error: error
+					error: JSON.stringify(error)
 				};
 			});
 	},
@@ -87,6 +100,27 @@ export const actions = {
 		const data = await request.formData();
 		const sessionId = data.get('sessionId') as string;
 		const sessionResult = await getProjectClient().stopSession(sessionId);
+		try {
+			const session = sessionResult.unwrap();
+			return {
+				success: true,
+				session: session
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: JSON.stringify(error)
+			};
+		}
+	},
+	deleteSession: async ({ request }) => {
+		const data = await request.formData();
+		const sessionId = data.get('sessionId') as string;
+		const projectClient = getProjectClient();
+		const sessionResult = await projectClient.client.authorizedFetch(
+			`projects/${projectClient.projectId}/sessions/${sessionId}`,
+			'DELETE'
+		);
 		try {
 			const session = sessionResult.unwrap();
 			return {

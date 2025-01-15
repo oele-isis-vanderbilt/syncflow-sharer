@@ -45,13 +45,25 @@
 		});
 		await room.connect(livekitServerUrl, token);
 
+		let publicationRequestBody = {
+			sessionId: data.sharingDetails.sessionId,
+			sessionName: data.sharingDetails.sessionName,
+			identity: data.sharingDetails.identity,
+			screenShare: {
+				publicationSid: '',
+				trackInfo: {}
+			},
+			audioTracks: [],
+			videoTracks: []
+		};
+
 		if (data.sharingDetails.screenShareEnabled) {
-			await room.localParticipant.setScreenShareEnabled(
+			const publication = await room.localParticipant.setScreenShareEnabled(
 				true,
 				{
 					contentHint: 'detail',
 					audio: false,
-					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080'),
+					resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080').resolution,
 					video: { displaySurface: 'monitor' }
 				},
 				{
@@ -60,29 +72,44 @@
 					simulcast: true
 				}
 			);
+			publicationRequestBody.screenShare.publicationSid =
+				publication?.trackSid || publication?.trackInfo?.sid || '';
+			publicationRequestBody.screenShare.trackInfo = publication?.trackInfo?.toJson() || {};
 		}
 
 		if (data.sharingDetails.enableAudio && data.sharingDetails.audioDeviceIds.length > 0) {
-			await Promise.all(
+			let pubDetails = await Promise.all(
 				data.sharingDetails.audioDeviceIds.map((audioDeviceId) => {
 					if (room) {
 						return publishAudioTrack(room, audioDeviceId);
 					}
 				})
 			);
+
+			publicationRequestBody.audioTracks = pubDetails;
 		}
 
 		if (data.sharingDetails.enableCamera && data.sharingDetails.videoDeviceIds.length > 0) {
-			await Promise.all(
+			let pubDetails = await Promise.all(
 				data.sharingDetails.videoDeviceIds.map((videoDeviceId) => {
 					if (room) {
 						return publishVideoTrack(room, videoDeviceId);
 					}
 				})
 			);
+
+			publicationRequestBody.videoTracks = pubDetails;
 		}
 
 		publicationsReady = true;
+
+		await fetch('/api/publication_record', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(publicationRequestBody)
+		});
 
 		room.on('disconnected', async () => {
 			window.location.href = '/';
@@ -96,13 +123,21 @@
 			channelCount: 1
 		});
 
-		await room.localParticipant.publishTrack(localAudioTrack, {
+		const publication = await room.localParticipant.publishTrack(localAudioTrack, {
 			audioPreset: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality'),
 			dtx: false,
 			red: false,
 			source: Track.Source.Microphone,
-			name: getSelectedDeviceName(audioDeviceId)
+			name: `${getSelectedDeviceName(audioDeviceId)}-microphone`
 		});
+
+		return {
+			publicationSid: publication.trackSid || publication.trackInfo?.sid || '',
+			deviceId: audioDeviceId,
+			deviceName: getSelectedDeviceName(audioDeviceId),
+			kind: 'audio',
+			trackInfo: publication.trackInfo?.toJson()
+		};
 	}
 
 	async function publishVideoTrack(room: Room, videoDeviceId: string) {
@@ -111,12 +146,22 @@
 			resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080').resolution
 		});
 
-		await room.localParticipant.publishTrack(localVideoTrack, {
+		localVideoTrack.sid = `${getSelectedDeviceName(videoDeviceId)}-${videoDeviceId.slice(0, 5)}-${localVideoTrack.sid}`;
+
+		const publication = await room.localParticipant.publishTrack(localVideoTrack, {
 			videoCodec: data.sharingDetails.videoCodec || 'h264',
 			name: `${getSelectedDeviceName(videoDeviceId)}-camera`,
 			simulcast: true,
 			source: Track.Source.Camera
 		});
+
+		return {
+			publicationSid: publication.trackSid || publication.trackInfo?.sid || '',
+			deviceId: videoDeviceId,
+			deviceName: getSelectedDeviceName(videoDeviceId),
+			kind: 'video',
+			trackInfo: publication.trackInfo?.toJson()
+		};
 	}
 
 	function getAudioPreset(preset: string) {
