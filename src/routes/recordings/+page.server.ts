@@ -50,8 +50,37 @@ export const load: PageServerLoad = async ({ url }) => {
 	}
 };
 
-export const actions: Actions = {
-    getFileUrl: async ({ request }) => {
-        
-    }
-}
+export const actions = {
+	getFileUrl: async ({ request }) => {
+		const data = await request.formData();
+		const projectClient = getProjectClient();
+		const projectId = process.env.SYNCFLOW_PROJECT_ID!;
+
+		const sessionId = data.get('sessionId') as string;
+		const destination = data.get('destination') as string;
+
+		const fileUrlResult = await projectClient.client.authorizedFetch<{ mediaUrl: string }>(
+			`projects/${projectId}/sessions/${sessionId}/get-media-url`,
+			'POST',
+			{
+				'Content-Type': 'application/json'
+			},
+			{
+				path: destination
+			}
+		);
+
+		try {
+			const fileInfo = fileUrlResult.unwrap();
+			return {
+				success: true,
+				url: fileInfo.mediaUrl
+			};
+		} catch (err) {
+			return {
+				success: false,
+				error: JSON.stringify(err)
+			};
+		}
+	}
+} satisfies Actions;
