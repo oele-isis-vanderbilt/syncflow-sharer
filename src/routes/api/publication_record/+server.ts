@@ -10,7 +10,6 @@ export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const projectDetails = (await projectClient.getProjectDetails()).unwrap();
 		const objectPath = `${projectDetails.name}-${projectDetails.id}/${body.sessionName}/publication-records/${body.identity}/${new Date().toISOString()}/record.json`;
-		console.log(`Uploading to ${objectPath}`);
 		const jsonBuffer = Buffer.from(JSON.stringify(body), 'utf-8');
 		try {
 			await minioClient.putObject(
