@@ -1,5 +1,5 @@
 import { getProjectClient } from '$lib/server/syncflow-client';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { error } from '@sveltejs/kit';
 
 export interface SessionRecording {
@@ -49,3 +49,9 @@ export const load: PageServerLoad = async ({ url }) => {
 		return error(err.statusCode || 500, JSON.stringify(err));
 	}
 };
+
+export const actions: Actions = {
+    getFileUrl: async ({ request }) => {
+        
+    }
+}

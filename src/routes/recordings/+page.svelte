@@ -78,6 +78,7 @@
 
 									<form method="POST" action="?/getFileUrl" use:enhance>
 										<input type="hidden" name="sessionId" value={recording.sessionId} />
+                                        <input type="hidden" name="destination" value={recording.destination} />
 										<Button type="submit" class="flex-1 rounded-lg bg-blue-700 px-4 py-2 text-white"
 											>Download</Button
 										>
