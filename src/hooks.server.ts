@@ -4,7 +4,11 @@ import { redirect } from '@sveltejs/kit';
 export const handle: Handle = async ({ event, resolve }) => {
 	const sessionId = event.cookies.get('sessionId');
 
-	if (event.route.id === '/admin' || event.route.id === '/preview') {
+	if (
+		event.route.id === '/admin' ||
+		event.route.id === '/preview' ||
+		event.route.id === '/recordings'
+	) {
 		if (!sessionId) {
 			throw redirect(302, '/login');
 		}

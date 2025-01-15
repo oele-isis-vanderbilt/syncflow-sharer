@@ -162,6 +162,7 @@
 								url.searchParams.set('token', tokenDetails.token as string);
 								url.searchParams.set('livekitUrl', tokenDetails.livekitServerUrl as string);
 								url.searchParams.set('sessionName', getSelectedSessionName() || '');
+								url.searchParams.set('sessionId', selected);
 								url.searchParams.set('videoDeviceIds', userSelections.videoDeviceIds.join(','));
 								url.searchParams.set('audioDeviceIds', userSelections.audioDeviceIds.join(','));
 								url.searchParams.set('identity', identity);
