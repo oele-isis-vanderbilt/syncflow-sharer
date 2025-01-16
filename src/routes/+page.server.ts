@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	} catch (error) {
 		return {
 			sessions: null,
-			error: error
+			error: JSON.stringify(error)
 		};
 	}
 };
