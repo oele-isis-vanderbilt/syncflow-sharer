@@ -120,7 +120,19 @@
 							>{new Date(recording.startedAt / 1000000).toLocaleString()}</span
 						>
 
-						<form method="POST" action="?/getFileUrl" use:enhance>
+						<form
+							method="POST"
+							action="?/getFileUrl"
+							use:enhance={(/*params*/) => {
+								return async ({ result }) => {
+									if (result.status === 200) {
+										window.open(result.data.url, '_blank');
+									} else {
+										alert('Failed to download file');
+									}
+								};
+							}}
+						>
 							<input type="hidden" name="sessionId" value={recording.sessionId} />
 							<Button type="submit" class="flex-1 rounded-lg bg-blue-700 px-4 py-2 text-white"
 								>Download</Button
