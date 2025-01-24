@@ -2,6 +2,7 @@ import { getMinioClient } from '$lib/server/s3-client';
 import { getProjectClient } from '$lib/server/syncflow-client';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
+import { syncFlowSettings } from '$lib/server/settings';
 
 export const GET: RequestHandler = async ({ request, url }) => {
 	if (process.env.ENABLE_TOKEN_ENDPOINT !== 'true') {
@@ -19,9 +20,25 @@ export const GET: RequestHandler = async ({ request, url }) => {
 
 	try {
 		const sessions = activeSessionsResult.unwrap();
-		const session = sessions.find(
+		let session = sessions.find(
 			(s) => s.status === 'Started' && s.comments === 'Created from SyncFlow Sharer'
 		);
+
+		if (!session) {
+			const sessionResult = await projectClient.createSession({
+				name: syncFlowSettings.sessionName || '',
+				comments: 'Created from SyncFlow Sharer',
+				maxParticipants: 200,
+				emptyTimeout: 200000,
+				autoRecording: syncFlowSettings.recordSession
+			});
+
+			try {
+				session = sessionResult.unwrap();
+			} catch (err) {
+				return error(err.statusCode || 500, JSON.stringify(err));
+			}
+		}
 
 		if (session) {
 			const tokenResult = await projectClient.generateSessionToken(session.id, {
