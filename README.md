@@ -19,6 +19,7 @@ S3_PORT="S3 PORT"
 S3_USE_SSL="USE SSL
 S3_ACCESS_KEY="ACCESS KEY for S3"
 S3_SECRET_KEY="SECRET KEY for S3"
+ENABLE_TOKEN_ENDPOINT=true/false
 ```
 
 Use the docker commands, to build and run the app.
