@@ -31,7 +31,7 @@ jobs:
             echo "Pulling latest changes from GitHub"
             rm -rf MimeSharerDeployment
             mkdir MimeSharerDeployment && cd MimeSharerDeployment
-            git clone git@github.com:oele-isis-vanderbilt/syncflow-sharer.git
+            git clone https://github.com/oele-isis-vanderbilt/syncflow-sharer.git
             cd syncflow-sharer
             cp ~/.env.mimesharer .env
             sudo chmod 666 /var/run/docker.sock
