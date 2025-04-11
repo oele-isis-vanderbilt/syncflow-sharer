@@ -63,12 +63,16 @@ export const GET: RequestHandler = async ({ request, url }) => {
 			});
 
 			return tokenResult
-				.map((t) => json(t))
+				.map((t) => json(t, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': process.env.TOKEN_ENDPOINT_ORIGIN
+                    }
+                }))
 				.unwrapOrElse((err) => error(500, 'Error generating token\n' + JSON.stringify(err)));
 		}
 	} catch (err) {
 		throw error(500, JSON.stringify(err));
 	}
 
-	return json({ success: true });
 };
