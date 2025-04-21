@@ -2,6 +2,7 @@ import { getMinioClient } from '$lib/server/s3-client';
 import { getProjectClient } from '$lib/server/syncflow-client';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
+import { getJSONCorsHeaders } from '../utils';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
@@ -28,5 +29,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.error(error);
 	}
 
-	return json(body);
+	return json(body, {
+		headers: getJSONCorsHeaders()
+	});
 };
