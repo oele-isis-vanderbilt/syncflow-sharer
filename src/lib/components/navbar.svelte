@@ -42,6 +42,7 @@
 	>
 		<NavLi class="lg:mb-0 lg:px-2" href="/">Home</NavLi>
 		<NavLi class="lg:mb-0 lg:px-2" href="/admin">Admin</NavLi>
+		<NavLi class="lg:mb-0 lg:px-2" href="/video-grid">Preview</NavLi>
 	</NavUl>
 
 	<div class="ms-auto flex items-center">
