@@ -1,8 +1,8 @@
-import { getMinioClient } from '$lib/server/s3-client';
 import { getProjectClient } from '$lib/server/syncflow-client';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { syncFlowSettings } from '$lib/server/settings';
+import { getJSONCorsHeaders } from '../utils';
 
 export const GET: RequestHandler = async ({ request, url }) => {
 	if (process.env.ENABLE_TOKEN_ENDPOINT !== 'true') {
@@ -63,16 +63,14 @@ export const GET: RequestHandler = async ({ request, url }) => {
 			});
 
 			return tokenResult
-				.map((t) => json(t, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': process.env.TOKEN_ENDPOINT_ORIGIN
-                    }
-                }))
+				.map((t) =>
+					json(t, {
+						headers: getJSONCorsHeaders()
+					})
+				)
 				.unwrapOrElse((err) => error(500, 'Error generating token\n' + JSON.stringify(err)));
 		}
 	} catch (err) {
 		throw error(500, JSON.stringify(err));
 	}
-
 };
