@@ -6,7 +6,6 @@
 	import MdFullscreen from 'svelte-icons/md/MdFullscreen.svelte';
 	import Grid from '$lib/components/video/fullscreen-grid.svelte';
 	import { goto } from '$app/navigation';
-	// import FullScreen from 'svelte-fullscreen';
 	import { Tooltip } from 'flowbite-svelte';
 	import Fullscreen from '$lib/components/video/fullscreen.svelte';
 	import VideoTrack from '$lib/components/video/video-track.svelte';
