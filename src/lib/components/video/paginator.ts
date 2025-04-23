@@ -60,4 +60,9 @@ export class Paginator<T> {
 
 		return pages;
 	}
+
+	updateItems(newItems: T[]): void {
+		this.items = newItems;
+		this.reset();
+	}
 }

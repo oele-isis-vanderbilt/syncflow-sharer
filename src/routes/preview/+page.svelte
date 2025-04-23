@@ -1,22 +1,15 @@
-<script lang="ts" module>
-	import type { RemoteTrack, Track } from 'livekit-client';
-
-	export interface TrackSubscription {
-		participant: string;
-		track: RemoteTrack;
-		kind: Track.Kind;
-		name?: string;
-	}
-</script>
-
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import * as livekit from 'livekit-client';
+	import type { TrackSubscription } from '$lib/components/video';
 	import MdFullscreen from 'svelte-icons/md/MdFullscreen.svelte';
+	import Grid from '$lib/components/video/fullscreen-grid.svelte';
 	import { goto } from '$app/navigation';
-	import FullScreen from 'svelte-fullscreen';
+	// import FullScreen from 'svelte-fullscreen';
 	import { Tooltip } from 'flowbite-svelte';
+	import Fullscreen from '$lib/components/video/fullscreen.svelte';
+	import VideoTrack from '$lib/components/video/video-track.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let videoContainer: HTMLDivElement;
@@ -50,6 +43,7 @@
 		if (track.kind === livekit.Track.Kind.Video) {
 			if (track.sid && !subscrbedVideoTracks[track.sid]) {
 				subscrbedVideoTracks[track.sid] = {
+					id: track.sid,
 					participant:
 						(participant.name || participant.identity) + `(${publication.track?.source})`,
 					track,
@@ -60,6 +54,7 @@
 		} else if (track.kind === livekit.Track.Kind.Audio) {
 			if (track.sid && !subscribedAudioTracks[track.sid]) {
 				subscribedAudioTracks[track.sid] = {
+					id: track.sid,
 					participant:
 						(participant.name || participant.identity) + `(${publication.track?.source})`,
 					track,
@@ -110,22 +105,6 @@
 		});
 	});
 
-	function attachVideo(node: HTMLVideoElement) {
-		$effect(() => {
-			if (node) {
-				const track = subscrbedVideoTracks[node.id];
-				if (track) {
-					track.track.attach(node);
-				}
-				return () => {
-					if (track) {
-						track.track.detach(node);
-					}
-				};
-			}
-		});
-	}
-
 	function attachAudio(node: HTMLAudioElement) {
 		$effect(() => {
 			if (node) {
@@ -163,6 +142,18 @@
 			}
 		});
 	}
+
+	let videos = $derived.by(() => {
+		let videos = Object.entries(subscrbedVideoTracks).map(([id, trackInfo]) => ({
+			id,
+			participant: trackInfo.participant,
+			track: trackInfo.track,
+			kind: trackInfo.kind,
+			name: trackInfo.name
+		}));
+		console.log(videos);
+		return videos;
+	});
 </script>
 
 <div
@@ -172,16 +163,7 @@
 		<h2 class="font-semibold text-gray-900 md:text-2xl dark:text-gray-300">
 			Welcome to Session {data.session.name}!, {data.token.identity}
 		</h2>
-		<div class="flex flex-row items-center justify-between text-center">
-			<div class="h-5 w-5">
-				<button class="text-gray-900 dark:text-gray-300">
-					<MdFullscreen role="button" class="p-2 text-xs text-black dark:text-gray-300" />
-				</button>
-			</div>
-			<Tooltip class="dark:bg-gray-900" placement="bottom-start"
-				>Enter Full Screen(grid) View [todo]</Tooltip
-			>
-		</div>
+		<Grid {videos} />
 	</div>
 
 	<h3 class="font-semibold text-gray-900 md:text-xl dark:text-gray-300">Video Streams</h3>
@@ -191,28 +173,37 @@
 	>
 		{#each Object.entries(subscrbedVideoTracks) as [id, trackInfo]}
 			<div class="flex flex-col justify-between bg-gray-200 dark:bg-gray-700" style="height:300px;">
-				<FullScreen let:onRequest let:onExit>
-					<div class="flex-1">
-						<!-- svelte-ignore a11y_media_has_caption -->
-						<video use:attachVideo class="h-full w-full" {id}></video>
+				<div class="flex-1">
+					<VideoTrack subscription={trackInfo} />
+				</div>
+				<div class="flex flex-row items-center justify-between text-center">
+					<div class="flex w-full flex-col items-center">
+						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
+						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
 					</div>
-					<div class="flex flex-row items-center justify-between text-center">
-						<div class="flex w-full flex-col items-center">
-							<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
-							<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
-						</div>
-						<div class="h-5 w-5 text-gray-900 dark:text-gray-300">
-							<button
-								onclick={() => {
-									onRequest();
-								}}
-							>
-								<MdFullscreen role="button" class="p-2 text-xs" />
-							</button>
-							<Tooltip class="dark:bg-gray-900" placement="bottom-end">Full Screen View</Tooltip>
-						</div>
+					<div class="h-5 w-5 text-gray-900 dark:text-gray-300">
+						<Fullscreen>
+							{#snippet header(isFull, requestFs)}
+								{#if !isFull}
+									<button
+										onclick={() => {
+											requestFs();
+										}}
+									>
+										<MdFullscreen role="button" class="p-2 text-xs" />
+										<Tooltip class="dark:bg-gray-900" placement="bottom-end"
+											>Full Screen View</Tooltip
+										>
+									</button>
+								{/if}
+							{/snippet}
+							{#snippet content()}
+								<!-- svelte-ignore a11y_media_has_caption -->
+								<VideoTrack subscription={trackInfo} />
+							{/snippet}
+						</Fullscreen>
 					</div>
-				</FullScreen>
+				</div>
 			</div>
 		{/each}
 	</div>

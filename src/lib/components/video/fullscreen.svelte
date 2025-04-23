@@ -1,32 +1,36 @@
 <!-- Fullscreen.svelte -->
 
 <script lang="ts">
-	import { Button } from 'flowbite-svelte';
+	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 
 	let isFull = $state(false);
-	let fsContainer = $state(null);
+	let fsContainer: HTMLDivElement | null = $state(null);
 	let { content, header }: { content: Snippet; header: Snippet<[boolean, () => void]> } = $props();
 
 	// boring plain js fullscreen support stuff below
 	const noop = () => {};
 
-	const fullscreenSupport = !!(
-		document.fullscreenEnabled ||
-		document.webkitFullscreenEnabled ||
-		document.mozFullScreenEnabled ||
-		document.msFullscreenEnabled ||
-		false
-	);
+	const fullscreenSupport =
+		browser &&
+		!!(
+			document.fullscreenEnabled ||
+			document.webkitFullscreenEnabled ||
+			document.mozFullScreenEnabled ||
+			document.msFullscreenEnabled ||
+			false
+		);
 
-	const exitFullscreen = (
-		document.exitFullscreen ||
-		document.mozCancelFullScreen ||
-		document.webkitExitFullscreen ||
-		document.msExitFullscreen ||
-		noop
-	).bind(document);
+	const exitFullscreen = browser
+		? (
+				document.exitFullscreen ||
+				document.mozCancelFullScreen ||
+				document.webkitExitFullscreen ||
+				document.msExitFullscreen ||
+				noop
+			).bind(document)
+		: noop;
 
 	const requestFullscreen = () => {
 		const requestFS = (
@@ -52,7 +56,7 @@
 		if (isFull) {
 			exitFullscreen();
 		} else {
-			requestFullscreen(fsContainer);
+			requestFullscreen();
 		}
 		isFull = !isFull;
 	};
