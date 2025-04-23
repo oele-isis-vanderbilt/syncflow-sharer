@@ -151,7 +151,6 @@
 			kind: trackInfo.kind,
 			name: trackInfo.name
 		}));
-		console.log(videos);
 		return videos;
 	});
 </script>
