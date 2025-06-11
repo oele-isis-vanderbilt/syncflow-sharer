@@ -176,13 +176,13 @@
 				</div>
 				<div class="flex flex-row items-center justify-between text-center">
 					<div class="flex w-full flex-col items-center">
-						<p class="max-w-48 truncate p-1 text-gray-900 dark:text-gray-300">
+						<span class="max-w-48 truncate p-1 text-gray-900 dark:text-gray-300">
 							{trackInfo.participant}
-						</p>
+						</span>
 						<Tooltip>
 							{trackInfo.participant}
 						</Tooltip>
-						<p class="truncate p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</p>
+						<span class="truncate p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
 					</div>
 					<div class="h-5 w-5 text-gray-900 dark:text-gray-300">
 						<Fullscreen>
