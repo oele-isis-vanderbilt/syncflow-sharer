@@ -176,8 +176,13 @@
 				</div>
 				<div class="flex flex-row items-center justify-between text-center">
 					<div class="flex w-full flex-col items-center">
-						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
-						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
+						<span class="max-w-48 truncate p-1 text-gray-900 dark:text-gray-300">
+							{trackInfo.participant}
+						</span>
+						<Tooltip>
+							{trackInfo.participant}
+						</Tooltip>
+						<span class="truncate p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
 					</div>
 					<div class="h-5 w-5 text-gray-900 dark:text-gray-300">
 						<Fullscreen>
@@ -218,7 +223,12 @@
 				</div>
 				<div class="flex flex-row items-center justify-between text-center dark:bg-gray-700">
 					<div class="flex w-full flex-col items-center">
-						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.participant}</span>
+						<span class="max-w-48 truncate p-1 text-gray-900 dark:text-gray-300"
+							>{trackInfo.participant}</span
+						>
+						<Tooltip>
+							{trackInfo.participant}
+						</Tooltip>
 						<span class="p-1 text-gray-900 dark:text-gray-300">{trackInfo.name}</span>
 					</div>
 				</div>
