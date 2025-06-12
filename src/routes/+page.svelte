@@ -11,11 +11,7 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	const activeSessions =
-		data.sessions?.filter(
-			(session) =>
-				session.status === 'Started' && session.comments === 'Created from SyncFlow Sharer'
-		) || [];
+	const activeSessions = data.sessions?.filter((session) => session.status === 'Started') || [];
 	let selections = activeSessions.map((session) => {
 		return {
 			value: session.id,

@@ -1,4 +1,4 @@
-import { getProjectClient } from '$lib/server/syncflow-client';
+import { getProjectClient, SYNCFLOW_SHARER_SESSION_COMMENTS } from '$lib/server/syncflow-client';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { syncFlowSettings } from '$lib/server/settings';
@@ -21,13 +21,13 @@ export const GET: RequestHandler = async ({ request, url }) => {
 	try {
 		const sessions = activeSessionsResult.unwrap();
 		let session = sessions.find(
-			(s) => s.status === 'Started' && s.comments === 'Created from SyncFlow Sharer'
+			(s) => s.status === 'Started' && s.comments === SYNCFLOW_SHARER_SESSION_COMMENTS
 		);
 
 		if (!session) {
 			const sessionResult = await projectClient.createSession({
 				name: syncFlowSettings.sessionName || '',
-				comments: 'Created from SyncFlow Sharer',
+				comments: SYNCFLOW_SHARER_SESSION_COMMENTS,
 				maxParticipants: 200,
 				emptyTimeout: 200000,
 				autoRecording: syncFlowSettings.recordSession
