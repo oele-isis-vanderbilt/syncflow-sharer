@@ -13,3 +13,17 @@ export const getProjectClient = () => {
 	}
 	return projectClient;
 };
+
+export const SYNCFLOW_SHARER_SESSION_COMMENTS = 'Created from SyncFlow Sharer';
+export async function getSyncflowSharerSessions() {
+	const projectClient = getProjectClient();
+	const sessionsResult = await projectClient.getSessions();
+
+	if (process.env.SHOW_ALL_SESSIONS === 'true') {
+		return sessionsResult;
+	} else {
+		return sessionsResult.map((sessions) => {
+			return sessions.filter((s) => s.comments === SYNCFLOW_SHARER_SESSION_COMMENTS);
+		});
+	}
+}

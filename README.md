@@ -4,7 +4,7 @@ This is a demo application that allows you to share different media to a SyncFlo
 
 ## Deployment Instructions
 
-First, Create an environment file (`secrets.ts`) with the following content:
+First, Create an environment file (`env`) with the following content:
 
 ```{sh}
 SYNCFLOW_SERVER_URL="SYNCFLOW_BACKEND_URL"
@@ -21,6 +21,7 @@ S3_ACCESS_KEY="ACCESS KEY for S3"
 S3_SECRET_KEY="SECRET KEY for S3"
 ENABLE_TOKEN_ENDPOINT=true/false
 TOKEN_ENDPOINT_ORIGIN="DOMAIN FROM WHICH TOKENS ARE ALLOWED"
+SHOW_ALL_SESSIONS="IF SET TO true, the sharer will also show sessions created outside of Syncflow sharer"
 ```
 
 Use the docker commands, to build and run the app.

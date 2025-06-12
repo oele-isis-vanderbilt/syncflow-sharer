@@ -1,20 +1,18 @@
 import type { PageServerLoad } from './$types';
 import { syncFlowSettings } from '$lib/server/settings';
-import { getProjectClient } from '$lib/server/syncflow-client';
+import {
+	getProjectClient,
+	getSyncflowSharerSessions,
+	SYNCFLOW_SHARER_SESSION_COMMENTS
+} from '$lib/server/syncflow-client';
 
 const getSessions = async () => {
-	return (await getProjectClient().getSessions())
+	return (await getSyncflowSharerSessions())
 		.map((sessions) => {
 			return {
-				active: sessions.filter(
-					(session) =>
-						session.status === 'Started' && session.comments === 'Created from SyncFlow Sharer'
-				),
+				active: sessions.filter((session) => session.status === 'Started'),
 				ended: sessions
-					.filter(
-						(session) =>
-							session.status !== 'Started' && session.comments === 'Created from SyncFlow Sharer'
-					)
+					.filter((session) => session.status !== 'Started')
 					.sort((a, b) => {
 						return a.startedAt > b.startedAt ? -1 : 1;
 					})
@@ -73,7 +71,7 @@ export const actions = {
 
 		const sessionResult = await getProjectClient().createSession({
 			name: sessionName!,
-			comments: 'Created from SyncFlow Sharer',
+			comments: SYNCFLOW_SHARER_SESSION_COMMENTS,
 			autoRecording: syncFlowSettings.isSessionRecorded(),
 			emptyTimeout: 20000,
 			maxParticipants: 100

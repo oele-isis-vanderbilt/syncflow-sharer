@@ -2,9 +2,10 @@ import { getProjectClient } from '$lib/server/syncflow-client';
 import { syncFlowSettings } from '$lib/server/settings';
 import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
+import { getSyncflowSharerSessions } from '$lib/server/syncflow-client';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const sessionResult = await getProjectClient().getSessions();
+	const sessionResult = await getSyncflowSharerSessions();
 	try {
 		const sessions = sessionResult.unwrap();
 		return {
