@@ -5,6 +5,7 @@ class SyncFlowSettings {
 	enableScreenShare: boolean;
 	recordSession: boolean;
 	sessionName: string | null;
+	selectedDevices: string[];
 
 	constructor() {
 		this.enabled = true;
@@ -13,6 +14,7 @@ class SyncFlowSettings {
 		this.enableScreenShare = true;
 		this.sessionName = null;
 		this.recordSession = true;
+		this.selectedDevices = [];
 	}
 
 	setEnabled(enabled: boolean) {
@@ -37,6 +39,10 @@ class SyncFlowSettings {
 
 	setSessionName(sessionName: string) {
 		this.sessionName = sessionName;
+	}
+
+	setSelectedDevices(selectedDevices: string[]) {
+		this.selectedDevices = selectedDevices;
 	}
 
 	isEnabled() {
@@ -70,7 +76,8 @@ class SyncFlowSettings {
 			enableCamera: this.enableCamera,
 			enableScreenShare: this.enableScreenShare,
 			sessionName: this.sessionName,
-			recordSession: this.recordSession
+			recordSession: this.recordSession,
+			selectedDevices: this.selectedDevices
 		};
 	}
 }

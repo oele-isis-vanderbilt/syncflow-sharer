@@ -27,3 +27,9 @@ export async function getSyncflowSharerSessions() {
 		});
 	}
 }
+
+export async function getProjectDevices() {
+	const projectClient = getProjectClient();
+	const devicesResult = await projectClient.getDevices();
+	return devicesResult;
+}
