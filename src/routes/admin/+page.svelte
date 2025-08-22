@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Toggle } from 'flowbite-svelte';
+	import { Button, MultiSelect, Select, Toggle, type SelectOptionType } from 'flowbite-svelte';
 
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
@@ -17,7 +17,8 @@
 		enableCamera: data.settings.enableCamera,
 		enableScreenShare: data.settings.enableScreenShare,
 		sessionName: data.settings.sessionName,
-		recordSession: data.settings.recordSession
+		recordSession: data.settings.recordSession,
+		selectedDevices: data.settings.selectedDevices || []
 	});
 
 	let enableUpdate = $derived.by(() => {
@@ -27,7 +28,13 @@
 			currentSettings.enableCamera !== settingsState.enableCamera ||
 			currentSettings.enableScreenShare !== settingsState.enableScreenShare ||
 			currentSettings.sessionName !== settingsState.sessionName ||
-			currentSettings.recordSession !== settingsState.recordSession
+			currentSettings.recordSession !== settingsState.recordSession ||
+			currentSettings.selectedDevices.some(
+				(device) => !settingsState.selectedDevices.includes(device)
+			) ||
+			settingsState.selectedDevices.some(
+				(device) => !currentSettings.selectedDevices.includes(device)
+			)
 		);
 	});
 
@@ -38,9 +45,26 @@
 			enableCamera: data.settings.enableCamera,
 			enableScreenShare: data.settings.enableScreenShare,
 			sessionName: data.settings.sessionName,
-			recordSession: data.settings.recordSession
+			recordSession: data.settings.recordSession,
+			selectedDevices: data.settings.selectedDevices || []
 		};
 	});
+
+	let devicesToNotify = $derived(
+		Array.from(new Set(data.devices.map((device) => device.group as string)))
+	);
+
+	let selectedDevicesChoices = $derived(
+		devicesToNotify.map(
+			(device) =>
+				({
+					value: device,
+					name: device
+				}) as SelectOptionType<string>
+		)
+	);
+
+	$inspect(devicesToNotify);
 </script>
 
 <div class="max-w-8xl mx-auto flex flex-col px-6 py-6 lg:px-6 lg:py-6">
@@ -86,6 +110,13 @@
 				bind:value={settingsState.sessionName}
 				class="mt-6 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 dark:bg-gray-800 dark:text-gray-300"
 				placeholder="Session Name"
+			/>
+			<MultiSelect
+				placeholder="Select Devices to Notify"
+				items={selectedDevicesChoices}
+				bind:value={settingsState.selectedDevices}
+				class="mt-6 w-full"
+				name="selectedDevices"
 			/>
 		{/if}
 		{#if enableUpdate}

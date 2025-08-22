@@ -26,9 +26,11 @@ const getSessions = async () => {
 
 export const load: PageServerLoad = async ({ params }) => {
 	const sessions = await getSessions();
+	const devices = await getProjectClient().getDevices();
 	return {
 		settings: syncFlowSettings.toJSON(),
-		sessions: sessions
+		sessions: sessions,
+		devices: devices.unwrapOr([])
 	};
 };
 
@@ -41,6 +43,7 @@ export const actions = {
 		const enableScreenShare = data.get('enableScreenShare') as string;
 		const sessionName = data.get('sessionName') as string;
 		const recordSession = data.get('recordSession') as string;
+		const selectedDevices = data.getAll('selectedDevices') as string[];
 
 		syncFlowSettings.setEnabled(enabled === 'yes');
 		syncFlowSettings.setEnableAudio(enableAudio === 'yes');
@@ -48,6 +51,7 @@ export const actions = {
 		syncFlowSettings.setEnableScreenShare(enableScreenShare === 'yes');
 		syncFlowSettings.setRecordSession(recordSession === 'yes');
 		syncFlowSettings.setSessionName(sessionName);
+		syncFlowSettings.setSelectedDevices(selectedDevices);
 
 		return {
 			success: true,
