@@ -77,6 +77,7 @@ export const actions = {
 			name: sessionName!,
 			comments: SYNCFLOW_SHARER_SESSION_COMMENTS,
 			autoRecording: syncFlowSettings.isSessionRecorded(),
+			deviceGroups: syncFlowSettings.selectedDevices,
 			emptyTimeout: 20000,
 			maxParticipants: 100
 		});
