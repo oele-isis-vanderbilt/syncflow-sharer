@@ -1,6 +1,6 @@
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { getProjectClient } from '$lib/server/syncflow-client';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, url }) => {
 	const sessionId = url.searchParams.get('sessionId');
@@ -53,4 +53,22 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	).unwrapOrElse((err) => {
 		return error(500, 'Error getting session\n' + JSON.stringify(err));
 	});
+};
+
+export const actions: Actions = {
+	endSession: async ({ request }) => {
+		const data = await request.formData();
+		const sessionId = data.get('sessionId') as string;
+		const sessionResult = await getProjectClient().stopSession(sessionId);
+
+		if (sessionResult.ok()) {
+			throw redirect(302, '/admin');
+		} else {
+			return {
+				success: false,
+				errorType: 'sessionEnd',
+				message: 'Error ending session'
+			};
+		}
+	}
 };

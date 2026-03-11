@@ -4,6 +4,7 @@
 	export interface TrackSubscription {
 		id: string;
 		participant: string;
+		participantId: string;
 		track: RemoteTrack;
 		kind: Track.Kind;
 		name?: string;
