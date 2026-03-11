@@ -51,7 +51,7 @@
 	});
 
 	let devicesToNotify = $derived(
-		Array.from(new Set(data.devices.map((device) => device.group as string)))
+		Array.from(new Set((data.devices || []).map((device) => device.group as string)))
 	);
 
 	let selectedDevicesChoices = $derived(
@@ -151,9 +151,10 @@
 						<span class="text-black md:block dark:text-gray-300">{session.name}</span>
 						<span class="hidden text-black md:block dark:text-gray-300">{session.id}</span>
 
-						<button
-							class="rounded-lg bg-blue-700 px-4 py-2 text-white"
-							onclick={() => goto(`/preview?sessionId=${session.id}`)}>Preview Session</button
+						<a
+							class="inline-block rounded-lg bg-blue-700 px-4 py-2 text-center text-white"
+							target="_blank"
+							href="/preview?sessionId={session.id}">Preview Session</a
 						>
 						<form method="POST" action="?/endSession" use:enhance>
 							<input type="hidden" name="sessionId" value={session.id} />
