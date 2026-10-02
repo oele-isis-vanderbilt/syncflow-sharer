@@ -1,7 +1,5 @@
-<!-- Fullscreen.svelte -->
-
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 
@@ -61,6 +59,8 @@
 		isFull = !isFull;
 	};
 </script>
+
+<!-- Fullscreen.svelte -->
 
 <div class={isFull ? 'fs h-screen w-screen' : 'fs'} bind:this={fsContainer}>
 	{#if header}

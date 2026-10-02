@@ -6,7 +6,7 @@
 	import { Room } from 'livekit-client';
 	import DeviceSelector from '$lib/components/device-selector.svelte';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import CodecSelector from '$lib/components/codec-selector.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
