@@ -11,8 +11,8 @@
 		NavUl,
 		Tooltip
 	} from 'flowbite-svelte';
-	import { base } from '$app/paths';
-	import { dev } from '$app/environment';
+	import { resolve } from '$app/paths';
+	import { dev } from '$app/env';
 	import { enhance } from '$app/forms';
 
 	let divClass = 'w-full ms-auto lg:block lg:w-auto order-1 lg:order-none';
@@ -25,7 +25,7 @@
 </script>
 
 <Navbar color="default" fluid class="max-w-8xl mx-auto py-1.5 lg:px-0 dark:bg-gray-900" let:toggle>
-	<NavBrand href={base}>
+	<NavBrand href={resolve('')}>
 		<span
 			class="self-center whitespace-nowrap font-semibold text-gray-900 md:text-2xl dark:text-white"
 			>SyncFlow Sharer</span

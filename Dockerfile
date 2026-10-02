@@ -1,16 +1,19 @@
-FROM node:20 AS build
+FROM node:24 AS build
+
+# Enable pnpm via Corepack (bundled with Node 24)
+RUN corepack enable
 
 WORKDIR /app
 
-COPY package*.json .
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN npm ci
+RUN pnpm install
 
 COPY . .
-RUN npm run build
-RUN npm prune --production
+RUN pnpm run build
+RUN pnpm prune --prod
 
-FROM node:20 AS run
+FROM node:24 AS run
 
 ENV NODE_ENV=production
 
@@ -18,5 +21,5 @@ WORKDIR /app
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
-RUN ulimit -c unlimited
+
 ENTRYPOINT ["node", "build"]
