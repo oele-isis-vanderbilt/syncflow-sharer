@@ -52,7 +52,7 @@
 	</div>
 	<div class="mt-6 mb-20">
 		{#if data.recordings.length === 0}
-			<p class="text-black dark:text-gray-300">Recordings not Found and or empty.</p>
+			<p class="text-gray-900 dark:text-gray-300">Recordings not Found and or empty.</p>
 		{:else if mode === 'participant'}
 			<Accordion class="mb-20 h-full w-full">
 				{#each Object.entries(recordingsByPartcipants) as [participant, recordings]}
@@ -63,16 +63,16 @@
 								<li
 									class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
 								>
-									<span class="flex-1 text-black md:block dark:text-gray-300"
+									<span class="flex-1 text-gray-900 md:block dark:text-gray-300"
 										>{getFileName(recording.destination || '/')}</span
 									>
-									<span class="hidden flex-1 text-black md:block dark:text-gray-300"
+									<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
 										>{recording.trackId}</span
 									>
-									<span class="hidden flex-1 text-black md:block dark:text-gray-300"
+									<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
 										>{recording.status}</span
 									>
-									<span class="hidden flex-1 text-black md:block dark:text-gray-300"
+									<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
 										>{new Date(recording.startedAt / 1000000).toLocaleString()}</span
 									>
 
@@ -91,9 +91,7 @@
 									>
 										<input type="hidden" name="sessionId" value={recording.sessionId} />
 										<input type="hidden" name="destination" value={recording.destination} />
-										<Button type="submit" class="flex-1 rounded-lg bg-blue-700 px-4 py-2 text-white"
-											>Download</Button
-										>
+										<Button type="submit" color="alternative">Download</Button>
 									</form>
 								</li>
 							{/each}
@@ -107,16 +105,16 @@
 					<li
 						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
 					>
-						<span class="flex-1 text-black md:block dark:text-gray-300"
+						<span class="flex-1 text-gray-900 md:block dark:text-gray-300"
 							>{getFileName(recording.destination || '/')}</span
 						>
-						<span class="hidden flex-1 text-black md:block dark:text-gray-300"
+						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
 							>{recording.trackId}</span
 						>
-						<span class="hidden flex-1 text-black md:block dark:text-gray-300"
+						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
 							>{recording.status}</span
 						>
-						<span class="hidden flex-1 text-black md:block dark:text-gray-300"
+						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
 							>{new Date(recording.startedAt / 1000000).toLocaleString()}</span
 						>
 
@@ -134,9 +132,8 @@
 							}}
 						>
 							<input type="hidden" name="sessionId" value={recording.sessionId} />
-							<Button type="submit" class="flex-1 rounded-lg bg-blue-700 px-4 py-2 text-white"
-								>Download</Button
-							>
+							<input type="hidden" name="destination" value={recording.destination} />
+							<Button type="submit" color="alternative">Download</Button>
 						</form>
 					</li>
 				{/each}

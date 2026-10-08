@@ -231,7 +231,7 @@
 						video.id = publication.track.sid || '';
 						video.className = 'h-32 w-full';
 						const span = document.createElement('span');
-						span.className = 'text-black dark:text-gray-300';
+						span.className = 'text-gray-900 dark:text-gray-300';
 						span.textContent = publication.trackName || '';
 						trackInfoDiv.appendChild(video);
 						trackInfoDiv.appendChild(span);
@@ -279,7 +279,7 @@
 						audio.autoplay = false;
 						audio.muted = true;
 						const span = document.createElement('span');
-						span.className = 'text-black dark:text-gray-300';
+						span.className = 'text-gray-900 dark:text-gray-300';
 						span.textContent = publication.trackName || '';
 						trackInfoDiv.appendChild(audio);
 						trackInfoDiv.appendChild(span);
@@ -314,29 +314,26 @@
 
 <div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
 	<div class="text-center">
-		<h2 class="text-lg font-bold text-black italic dark:text-gray-300">
+		<h2 class="text-lg font-bold text-gray-900 italic dark:text-gray-300">
 			You are sharing to session {data.sharingDetails.sessionName} as {data.sharingDetails.identity}
 		</h2>
 		{#if data.sharingDetails.audioDeviceIds.length > 0}
-			<p class="text-black dark:text-gray-300">
+			<p class="text-gray-900 dark:text-gray-300">
 				Audio Devices: {data.sharingDetails.audioDeviceIds.map(getSelectedDeviceName).join(',')} (Enabled:
 				{data.sharingDetails.enableAudio})
 			</p>
 		{/if}
 		{#if data.sharingDetails.videoDeviceIds.length > 0}
-			<p class="text-black dark:text-gray-300">
+			<p class="text-gray-900 dark:text-gray-300">
 				Video Devices: {data.sharingDetails.videoDeviceIds.map(getSelectedDeviceName).join(',')} (Enabled:
 				{data.sharingDetails.enableCamera})
 			</p>
 		{/if}
 
-		<p class="text-black dark:text-gray-300">
+		<p class="text-gray-900 dark:text-gray-300">
 			Screen Share: {data.sharingDetails.screenShareEnabled ? 'Enabled' : 'Disabled'}
 		</p>
-		<Button
-			class="mt-4 w-full rounded bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-700"
-			onclick={stopPublishing}>Stop Sharing</Button
-		>
+		<Button color="red" class="mt-4 w-full" onclick={stopPublishing}>Stop Sharing</Button>
 		{#if publicationsReady}
 			<div class="mt-2 flex flex-col gap-2 md:flex-row">
 				<div class="w-full items-center md:w-1/3">
@@ -348,7 +345,7 @@
 							class="flex flex-col items-center justify-center gap-2 dark:bg-gray-700"
 						></div>
 					{:else}
-						<p class="text-black dark:text-gray-300">Audio Disabled</p>
+						<p class="text-gray-900 dark:text-gray-300">Audio Disabled</p>
 					{/if}
 				</div>
 				<div class="w-full md:w-1/3">
@@ -360,7 +357,7 @@
 						></div>
 					{:else}
 						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
-							<p class="text-black dark:text-gray-300">Video Disabled</p>
+							<p class="text-gray-900 dark:text-gray-300">Video Disabled</p>
 						</div>
 					{/if}
 				</div>
@@ -374,7 +371,7 @@
 						></div>
 					{:else}
 						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
-							<p class="text-black dark:text-gray-300">Screen Share Disabled</p>
+							<p class="text-gray-900 dark:text-gray-300">Screen Share Disabled</p>
 						</div>
 					{/if}
 				</div>

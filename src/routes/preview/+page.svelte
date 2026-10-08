@@ -6,10 +6,10 @@
 	import { ExpandOutline } from 'flowbite-svelte-icons';
 	import Grid from '$lib/components/video/fullscreen-grid.svelte';
 	import { goto } from '$app/navigation';
-	import { Tooltip, Button } from 'flowbite-svelte';
+	import { Tooltip, Button, ButtonGroup } from 'flowbite-svelte';
+	import ConfirmButton from '$lib/components/ui/ConfirmButton.svelte';
 	import Fullscreen from '$lib/components/video/fullscreen.svelte';
 	import VideoTrack from '$lib/components/video/video-track.svelte';
-	import { enhance } from '$app/forms';
 
 	let { data }: { data: PageData } = $props();
 
@@ -191,7 +191,8 @@
 
 					const timestamp = new Date().toLocaleString();
 
-					span.className = 'block font-mono text-sm p-1 border-b break-words max-w-full';
+					span.className =
+						'block font-mono text-sm p-1 border-b border-gray-200 dark:border-gray-700 break-words max-w-full';
 					span.textContent = `[${timestamp}] ${participant?.identity}: ${stringContent}`;
 
 					node.appendChild(span);
@@ -281,12 +282,13 @@
 			{/if}
 		</div>
 		<div class="flex flex-row items-center gap-2">
-			<form method="POST" action="?/endSession" use:enhance>
-				<input type="hidden" name="sessionId" value={data.session.id} />
-				<Button type="submit" class="rounded-lg bg-red-700 px-4 py-2 text-white hover:bg-red-800"
-					>Stop Session</Button
-				>
-			</form>
+			<ConfirmButton
+				action="?/endSession"
+				fields={{ sessionId: data.session.id }}
+				label="Stop Session"
+				title="Stop this session?"
+				message={`Stopping "${data.session.name}" ends it for everyone sharing into it. This can't be undone.`}
+			/>
 			<Grid {videos} />
 		</div>
 	</div>
@@ -294,24 +296,20 @@
 	<!-- View Switcher -->
 	<div class="mt-4 mb-6 flex flex-row items-center gap-4">
 		<span class="text-sm font-medium text-gray-700 dark:text-gray-300">View:</span>
-		<div class="flex rounded-lg bg-gray-200 p-1 dark:bg-gray-700">
-			<button
-				class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'participants'
-					? 'bg-blue-600 text-white'
-					: 'text-gray-700 hover:bg-gray-300 dark:text-gray-300 dark:hover:bg-gray-600'}"
-				onclick={() => (viewMode = 'participants')}
+		<ButtonGroup>
+			<Button
+				size="sm"
+				color={viewMode === 'participants' ? 'primary' : 'alternative'}
+				aria-pressed={viewMode === 'participants'}
+				onclick={() => (viewMode = 'participants')}>By Participant</Button
 			>
-				By Participant
-			</button>
-			<button
-				class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'all'
-					? 'bg-blue-600 text-white'
-					: 'text-gray-700 hover:bg-gray-300 dark:text-gray-300 dark:hover:bg-gray-600'}"
-				onclick={() => (viewMode = 'all')}
+			<Button
+				size="sm"
+				color={viewMode === 'all' ? 'primary' : 'alternative'}
+				aria-pressed={viewMode === 'all'}
+				onclick={() => (viewMode = 'all')}>All Tracks</Button
 			>
-				All Tracks
-			</button>
-		</div>
+		</ButtonGroup>
 	</div>
 
 	{#if viewMode === 'participants'}
@@ -325,8 +323,9 @@
 						<button
 							class="w-full rounded-lg p-3 text-left transition-colors {selectedParticipant ===
 							participant.participantId
-								? 'bg-blue-200 dark:bg-blue-900'
+								? 'bg-primary-100 dark:bg-primary-900'
 								: 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'}"
+							aria-pressed={selectedParticipant === participant.participantId}
 							onclick={() => (selectedParticipant = participant.participantId)}
 						>
 							<div class="truncate font-medium text-gray-900 dark:text-gray-300">
@@ -514,7 +513,7 @@
 
 	<h3 class="mt-6 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Text Streams</h3>
 	<div
-		class="flex h-96 flex-col overflow-auto rounded-lg bg-gray-950 text-white"
+		class="flex h-96 flex-col overflow-auto rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100"
 		use:appendDataMessages
 	></div>
 	<div class="mb-10"></div>

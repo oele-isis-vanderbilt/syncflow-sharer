@@ -1,9 +1,17 @@
 <script lang="ts">
-	import { Button, MultiSelect, Select, Toggle, type SelectOptionType } from 'flowbite-svelte';
+	import {
+		Alert,
+		Button,
+		MultiSelect,
+		Select,
+		Toggle,
+		type SelectOptionType
+	} from 'flowbite-svelte';
+	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
+	import ConfirmButton from '$lib/components/ui/ConfirmButton.svelte';
 
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
 	import type { ActionData } from '../$types';
 
 	const { data, form }: { data: PageData; form: ActionData } = $props();
@@ -120,48 +128,46 @@
 			/>
 		{/if}
 		{#if enableUpdate}
-			<Button type="submit" class="mt-6 rounded-lg bg-red-700 px-4 py-2 font-semibold text-white"
-				>Update Settings</Button
-			>
+			<Button type="submit" color="alternative" class="mt-6">Update Settings</Button>
 		{/if}
 	</form>
 	<div class="flex flex-row items-center justify-between">
 		<h2 class="mt-5 font-semibold text-gray-900 md:text-2xl dark:text-gray-300">Session Manager</h2>
 		{#if currentSettings.enabled}
 			<form method="POST" action="?/createSession" use:enhance>
-				<Button type="submit" class="mt-6 rounded-lg bg-red-700 px-4 py-2 font-semibold text-white"
-					>Create New Session</Button
-				>
+				<Button type="submit" color="primary" class="mt-6">Create New Session</Button>
 			</form>
 		{/if}
 	</div>
 	{#if !form?.success && form?.errorType === 'sessionExists'}
-		<p class="text-red-800">{form?.message}</p>
+		<Alert color="red" class="mt-4">
+			{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+			{form?.message}
+		</Alert>
 	{/if}
 	<h2 class="mt-5 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Active Sessions</h2>
 	<div class="mt-6">
 		{#if sessions.length === 0}
-			<p class="text-black dark:text-gray-300">No active sessions</p>
+			<p class="text-gray-900 dark:text-gray-300">No active sessions</p>
 		{:else}
 			<ul class="flex flex-col gap-2 overflow-auto">
 				{#each sessions as session}
 					<li
 						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 md:flex-row dark:bg-gray-800"
 					>
-						<span class="text-black md:block dark:text-gray-300">{session.name}</span>
-						<span class="hidden text-black md:block dark:text-gray-300">{session.id}</span>
+						<span class="text-gray-900 md:block dark:text-gray-300">{session.name}</span>
+						<span class="hidden text-gray-900 md:block dark:text-gray-300">{session.id}</span>
 
-						<a
-							class="inline-block rounded-lg bg-blue-700 px-4 py-2 text-center text-white"
-							target="_blank"
-							href="/preview?sessionId={session.id}">Preview Session</a
+						<Button color="alternative" target="_blank" href="/preview?sessionId={session.id}"
+							>Preview Session</Button
 						>
-						<form method="POST" action="?/endSession" use:enhance>
-							<input type="hidden" name="sessionId" value={session.id} />
-							<Button type="submit" class="rounded-lg bg-red-700 px-4 py-2 text-white"
-								>End Session</Button
-							>
-						</form>
+						<ConfirmButton
+							action="?/endSession"
+							fields={{ sessionId: session.id }}
+							label="End Session"
+							title="End this session?"
+							message={`Ending "${session.name}" disconnects everyone sharing into it. This can't be undone.`}
+						/>
 					</li>
 				{/each}
 			</ul>
@@ -171,25 +177,26 @@
 	<h2 class="mt-5 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Ended Sessions</h2>
 	<div class="mt-6 mb-20">
 		{#if endedSessions.length === 0}
-			<p class="text-black dark:text-gray-300">No ended sessions</p>
+			<p class="text-gray-900 dark:text-gray-300">No ended sessions</p>
 		{:else}
 			<ul class="flex flex-col gap-2 overflow-auto text-center">
 				{#each endedSessions as session}
 					<li
 						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
 					>
-						<span class="flex-1 text-black md:block dark:text-gray-300">{session.name}</span>
-						<span class="hidden flex-1 text-black md:block dark:text-gray-300">{session.id}</span>
-						<button
-							class="flex-1 rounded-lg bg-blue-700 px-4 py-2 text-white"
-							onclick={() => goto(`/recordings?sessionId=${session.id}`)}>View Recordings</button
+						<span class="flex-1 text-gray-900 md:block dark:text-gray-300">{session.name}</span>
+						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300">{session.id}</span
 						>
-						<form method="POST" action="?/deleteSession" use:enhance>
-							<input type="hidden" name="sessionId" value={session.id} />
-							<Button type="submit" class="flex-1 rounded-lg bg-red-700 px-4 py-2 text-white"
-								>Delete Session</Button
-							>
-						</form>
+						<Button color="alternative" href="/recordings?sessionId={session.id}"
+							>View Recordings</Button
+						>
+						<ConfirmButton
+							action="?/deleteSession"
+							fields={{ sessionId: session.id }}
+							label="Delete Session"
+							title="Delete this session?"
+							message={`Deleting "${session.name}" removes it from SyncFlow. This can't be undone.`}
+						/>
 					</li>
 				{/each}
 			</ul>

@@ -109,10 +109,29 @@ function check(file) {
 	return found;
 }
 
+// The hook writes its JSON immediately. A non-TTY stdin that stays silent (CI, a
+// subshell with an open pipe) means a plain run, so stop waiting after a short delay.
+function readStdin(timeoutMs = 500) {
+	return new Promise((done) => {
+		let raw = '';
+		const finish = () => {
+			clearTimeout(timer);
+			process.stdin.destroy();
+			done(raw);
+		};
+		const timer = setTimeout(() => {
+			if (!raw) finish();
+		}, timeoutMs);
+		process.stdin.setEncoding('utf8');
+		process.stdin.on('data', (chunk) => (raw += chunk));
+		process.stdin.on('end', finish);
+		process.stdin.on('error', finish);
+	});
+}
+
 async function hookFiles() {
 	if (process.stdin.isTTY) return null;
-	let raw = '';
-	for await (const chunk of process.stdin) raw += chunk;
+	const raw = await readStdin();
 	if (!raw.trim()) return null;
 	try {
 		const input = JSON.parse(raw);

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Button, Input, Label, P, Select } from 'flowbite-svelte';
+	import { Alert, Button, Input, Label, P, Select } from 'flowbite-svelte';
+	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 	import { Room } from 'livekit-client';
@@ -121,7 +122,7 @@
 			Error Fetching Sessions From SyncFlow
 		</h2>
 		<pre
-			class="mt-2 w-full overflow-auto bg-gray-300 p-2 text-black dark:bg-gray-800 dark:text-gray-300">{JSON.stringify(
+			class="mt-2 w-full overflow-auto bg-gray-300 p-2 text-gray-900 dark:bg-gray-800 dark:text-gray-300">{JSON.stringify(
 				data.error,
 				null,
 				2
@@ -199,15 +200,14 @@
 					/>
 				</div>
 				{#if sessionSharingErrors}
-					<span class="text-sm text-red-500">{sessionSharingErrors}</span>
+					<Alert color="red">
+						{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+						{sessionSharingErrors}
+					</Alert>
 				{/if}
 
 				{#if canShareSession}
-					<Button
-						type="submit"
-						class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-700"
-						>Share</Button
-					>
+					<Button type="submit" color="primary" class="mt-4 w-full">Share</Button>
 				{/if}
 			</form>
 		{/if}

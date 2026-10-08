@@ -115,7 +115,7 @@
 			{/each}
 
 			{#each placeholders as _}
-				<div class="h-full w-full bg-black opacity-0"></div>
+				<div class="h-full w-full opacity-0"></div>
 			{/each}
 		</div>
 	{/snippet}
