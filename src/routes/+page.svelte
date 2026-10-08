@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Alert, Button, Card, Heading, Label, P, Select } from 'flowbite-svelte';
+	import { Alert, Button, Card, Checkbox, Heading, Label, P, Select } from 'flowbite-svelte';
 	import FormField from '$lib/components/ui/FormField.svelte';
 	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
@@ -27,7 +27,8 @@
 		videoDeviceIds: [],
 		videoCodec: '',
 		videoPreset: '',
-		audioPreset: ''
+		audioPreset: '',
+		noiseCancellation: true
 	});
 	const settings = data.settings;
 	let devices = $state<MediaDeviceInfo[]>([]);
@@ -56,6 +57,10 @@
 
 			if (!userSelections.videoCodec) {
 				userSelections.videoCodec = 'h264';
+			}
+
+			if (typeof userSelections.noiseCancellation !== 'boolean') {
+				userSelections.noiseCancellation = true;
 			}
 
 			devices = await Room.getLocalDevices();
@@ -139,6 +144,12 @@
 				bind:selectedVideoPreset={userSelections.videoPreset}
 			/>
 		</Card>
+		<Card size="xl" class="p-4 sm:p-6">
+			<Heading tag="h2" class="text-xl">Audio options</Heading>
+			<Checkbox class="mt-4" bind:checked={userSelections.noiseCancellation}>
+				Enable noise cancellation
+			</Checkbox>
+		</Card>
 		<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
 			<Heading tag="h2" class="text-xl">Select a session</Heading>
 			{#if selections.length !== 0}
@@ -168,6 +179,10 @@
 									url.searchParams.set('videoCodec', userSelections.videoCodec);
 									url.searchParams.set('videoPreset', userSelections.videoPreset);
 									url.searchParams.set('audioPreset', userSelections.audioPreset);
+									url.searchParams.set(
+										'noiseCancellation',
+										userSelections.noiseCancellation ? 'true' : 'false'
+									);
 									window.location.href = url.toString();
 								}
 							}
