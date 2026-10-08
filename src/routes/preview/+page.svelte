@@ -160,7 +160,7 @@
 
 		room.on('disconnected', () => {
 			goto('/admin', {
-				invalidateAll: true
+				refreshAll: true
 			});
 		});
 
@@ -358,6 +358,12 @@
 								</div>
 							</section>
 						{/if}
+					{:else}
+						<div class="flex h-64 items-center justify-center text-center">
+							<P class="text-gray-500 dark:text-gray-400">
+								{selectedParticipant} has left the session. Select another participant.
+							</P>
+						</div>
 					{/if}
 				{:else}
 					<div class="flex h-64 items-center justify-center text-center">
