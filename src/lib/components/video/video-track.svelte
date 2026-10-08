@@ -20,5 +20,13 @@
 	}
 </script>
 
+<!-- Live WebRTC stream: there is no caption track to attach. -->
 <!-- svelte-ignore a11y_media_has_caption -->
-<video use:attachVideo class="h-full w-full object-cover" id={subscription?.id}></video>
+<video
+	use:attachVideo
+	class="h-full w-full object-cover"
+	id={subscription?.id}
+	aria-label={subscription
+		? `${subscription.name ?? 'Video'} from ${subscription.participant}`
+		: undefined}
+></video>

@@ -27,7 +27,8 @@
 	</NavBrand>
 
 	<div class="flex items-center gap-1 md:order-2 md:gap-2">
-		<DarkMode size="lg" />
+		<!-- Flowbite's DarkMode sets focus:outline-hidden with no replacement; restore a ring. -->
+		<DarkMode size="lg" class="focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700" />
 		<Tooltip placement="bottom-end">Toggle dark mode</Tooltip>
 		{#if user}
 			<form action="/login?/logout" method="POST" use:enhance>

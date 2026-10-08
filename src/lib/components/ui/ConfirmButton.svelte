@@ -52,8 +52,8 @@
 
 <Button color="red" {size} onclick={() => (open = true)}>{label}</Button>
 
-<Modal bind:open {title} size="sm">
-	<P>{message}</P>
+<Modal bind:open {title} size="sm" aria-label={title} aria-describedby="{formId}-message">
+	<P id="{formId}-message">{message}</P>
 	{#snippet footer()}
 		<Button color="red" type="submit" form={formId}>{confirmLabel}</Button>
 		<Button color="alternative" data-autofocus onclick={() => (open = false)}>Cancel</Button>

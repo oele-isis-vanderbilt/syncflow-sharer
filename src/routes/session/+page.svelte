@@ -230,6 +230,7 @@
 						const video = publication.track.attach();
 						video.id = publication.track.sid || '';
 						video.className = 'h-32 w-full';
+						video.setAttribute('aria-label', `Your ${publication.trackName || 'video'} preview`);
 						const span = document.createElement('span');
 						span.className = 'text-gray-900 dark:text-gray-300';
 						span.textContent = publication.trackName || '';
@@ -278,6 +279,7 @@
 						audio.controls = true;
 						audio.autoplay = false;
 						audio.muted = true;
+						audio.setAttribute('aria-label', `Your ${publication.trackName || 'audio'} track`);
 						const span = document.createElement('span');
 						span.className = 'text-gray-900 dark:text-gray-300';
 						span.textContent = publication.trackName || '';
