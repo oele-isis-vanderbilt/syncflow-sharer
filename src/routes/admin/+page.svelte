@@ -2,11 +2,21 @@
 	import {
 		Alert,
 		Button,
+		Card,
+		Heading,
+		Label,
 		MultiSelect,
-		Select,
+		P,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
 		Toggle,
 		type SelectOptionType
 	} from 'flowbite-svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
 	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import ConfirmButton from '$lib/components/ui/ConfirmButton.svelte';
 
@@ -24,7 +34,7 @@
 		enableAudio: data.settings.enableAudio,
 		enableCamera: data.settings.enableCamera,
 		enableScreenShare: data.settings.enableScreenShare,
-		sessionName: data.settings.sessionName,
+		sessionName: data.settings.sessionName ?? '',
 		recordSession: data.settings.recordSession,
 		selectedDevices: data.settings.selectedDevices || []
 	});
@@ -35,7 +45,7 @@
 			currentSettings.enableAudio !== settingsState.enableAudio ||
 			currentSettings.enableCamera !== settingsState.enableCamera ||
 			currentSettings.enableScreenShare !== settingsState.enableScreenShare ||
-			currentSettings.sessionName !== settingsState.sessionName ||
+			(currentSettings.sessionName ?? '') !== settingsState.sessionName ||
 			currentSettings.recordSession !== settingsState.recordSession ||
 			currentSettings.selectedDevices.some(
 				(device) => !settingsState.selectedDevices.includes(device)
@@ -52,7 +62,7 @@
 			enableAudio: data.settings.enableAudio,
 			enableCamera: data.settings.enableCamera,
 			enableScreenShare: data.settings.enableScreenShare,
-			sessionName: data.settings.sessionName,
+			sessionName: data.settings.sessionName ?? '',
 			recordSession: data.settings.recordSession,
 			selectedDevices: data.settings.selectedDevices || []
 		};
@@ -71,135 +81,161 @@
 				}) as SelectOptionType<string>
 		)
 	);
-
-	$inspect(devicesToNotify);
 </script>
 
-<div class="max-w-8xl mx-auto flex flex-col px-6 py-6 lg:px-6 lg:py-6">
-	<h2 class="font-semibold text-gray-900 md:text-2xl dark:text-gray-300">SyncFlow Settings</h2>
-	<form method="POST" action="?/updateSettings" use:enhance>
-		<div class="mt-6 flex flex-row text-gray-900 dark:text-gray-300">
-			<span>{settingsState.enabled ? 'Disable' : 'Enable'} SyncFlow Pipeline</span>
+<div class="flex flex-col gap-6">
+	<Heading tag="h1" class="text-3xl md:text-4xl">Admin</Heading>
+
+	<Card size="xl" class="p-4 sm:p-6">
+		<Heading tag="h2" class="text-xl">SyncFlow settings</Heading>
+		<form class="mt-4 flex flex-col gap-6" method="POST" action="?/updateSettings" use:enhance>
 			<Toggle
 				bind:checked={settingsState.enabled}
 				name="enabled"
-				class="ms-auto"
-				value={settingsState.enabled ? 'yes' : 'no'}
-			/>
+				value={settingsState.enabled ? 'yes' : 'no'}>SyncFlow pipeline enabled</Toggle
+			>
+			{#if settingsState.enabled}
+				<Toggle
+					name="enableAudio"
+					bind:checked={settingsState.enableAudio}
+					value={settingsState.enableAudio ? 'yes' : 'no'}>Enable audio sharing</Toggle
+				>
+				<Toggle
+					name="enableCamera"
+					bind:checked={settingsState.enableCamera}
+					value={settingsState.enableCamera ? 'yes' : 'no'}>Enable camera sharing</Toggle
+				>
+				<Toggle
+					name="enableScreenShare"
+					bind:checked={settingsState.enableScreenShare}
+					value={settingsState.enableScreenShare ? 'yes' : 'no'}>Enable screen sharing</Toggle
+				>
+				<Toggle
+					name="recordSession"
+					bind:checked={settingsState.recordSession}
+					value={settingsState.recordSession ? 'yes' : 'no'}>Record session</Toggle
+				>
+				<FormField
+					id="sessionName"
+					label="Session name"
+					placeholder="Session name"
+					bind:value={settingsState.sessionName}
+				/>
+				<Label class="flex flex-col gap-2">
+					Devices to notify
+					<MultiSelect
+						placeholder="Select devices to notify"
+						items={selectedDevicesChoices}
+						bind:value={settingsState.selectedDevices}
+						name="selectedDevices"
+					/>
+				</Label>
+			{/if}
+			{#if enableUpdate}
+				<div>
+					<Button type="submit" color="alternative">Update Settings</Button>
+				</div>
+			{/if}
+		</form>
+	</Card>
+
+	<Card size="xl" class="flex flex-col gap-6 p-4 sm:p-6">
+		<div class="flex flex-row items-center justify-between gap-4">
+			<Heading tag="h2" class="text-xl">Session manager</Heading>
+			{#if currentSettings.enabled}
+				<form method="POST" action="?/createSession" use:enhance>
+					<Button type="submit" color="primary">Create New Session</Button>
+				</form>
+			{/if}
 		</div>
-		{#if settingsState.enabled}
-			<Toggle
-				name="enableAudio"
-				bind:checked={settingsState.enableAudio}
-				class="mt-6"
-				value={settingsState.enableAudio ? 'yes' : 'no'}>Enable Audio Sharing</Toggle
-			>
-			<Toggle
-				name="enableCamera"
-				bind:checked={settingsState.enableCamera}
-				class="mt-6"
-				value={settingsState.enableCamera ? 'yes' : 'no'}>Enable Camera Sharing</Toggle
-			>
-			<Toggle
-				name="enableScreenShare"
-				bind:checked={settingsState.enableScreenShare}
-				class="mt-6"
-				value={settingsState.enableScreenShare ? 'yes' : 'no'}>Enable Screen Sharing</Toggle
-			>
-			<Toggle
-				name="recordSession"
-				bind:checked={settingsState.recordSession}
-				class="mt-6"
-				value={settingsState.recordSession ? 'yes' : 'no'}>Record Session</Toggle
-			>
-			<input
-				type="text"
-				name="sessionName"
-				bind:value={settingsState.sessionName}
-				class="mt-6 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 dark:bg-gray-800 dark:text-gray-300"
-				placeholder="Session Name"
-			/>
-			<MultiSelect
-				placeholder="Select Devices to Notify"
-				items={selectedDevicesChoices}
-				bind:value={settingsState.selectedDevices}
-				class="mt-6 w-full"
-				name="selectedDevices"
-			/>
+		{#if !form?.success && form?.errorType === 'sessionExists'}
+			<Alert color="red">
+				{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+				{form?.message}
+			</Alert>
 		{/if}
-		{#if enableUpdate}
-			<Button type="submit" color="alternative" class="mt-6">Update Settings</Button>
-		{/if}
-	</form>
-	<div class="flex flex-row items-center justify-between">
-		<h2 class="mt-5 font-semibold text-gray-900 md:text-2xl dark:text-gray-300">Session Manager</h2>
-		{#if currentSettings.enabled}
-			<form method="POST" action="?/createSession" use:enhance>
-				<Button type="submit" color="primary" class="mt-6">Create New Session</Button>
-			</form>
-		{/if}
-	</div>
-	{#if !form?.success && form?.errorType === 'sessionExists'}
-		<Alert color="red" class="mt-4">
-			{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
-			{form?.message}
-		</Alert>
-	{/if}
-	<h2 class="mt-5 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Active Sessions</h2>
-	<div class="mt-6">
-		{#if sessions.length === 0}
-			<p class="text-gray-900 dark:text-gray-300">No active sessions</p>
-		{:else}
-			<ul class="flex flex-col gap-2 overflow-auto">
-				{#each sessions as session}
-					<li
-						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 md:flex-row dark:bg-gray-800"
-					>
-						<span class="text-gray-900 md:block dark:text-gray-300">{session.name}</span>
-						<span class="hidden text-gray-900 md:block dark:text-gray-300">{session.id}</span>
 
-						<Button color="alternative" target="_blank" href="/preview?sessionId={session.id}"
-							>Preview Session</Button
-						>
-						<ConfirmButton
-							action="?/endSession"
-							fields={{ sessionId: session.id }}
-							label="End Session"
-							title="End this session?"
-							message={`Ending "${session.name}" disconnects everyone sharing into it. This can't be undone.`}
-						/>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</div>
+		<section class="flex flex-col gap-4">
+			<Heading tag="h3" class="text-lg">Active sessions</Heading>
+			{#if sessions.length === 0}
+				<P class="text-sm text-gray-500 dark:text-gray-400">No active sessions.</P>
+			{:else}
+				<Table hoverable>
+					<TableHead>
+						<TableHeadCell>Name</TableHeadCell>
+						<TableHeadCell class="hidden md:table-cell">ID</TableHeadCell>
+						<TableHeadCell><span class="sr-only">Actions</span></TableHeadCell>
+					</TableHead>
+					<TableBody>
+						{#each sessions as session (session.id)}
+							<TableBodyRow>
+								<TableBodyCell>{session.name}</TableBodyCell>
+								<TableBodyCell class="hidden font-mono text-xs md:table-cell"
+									>{session.id}</TableBodyCell
+								>
+								<TableBodyCell>
+									<div class="flex justify-end gap-2">
+										<Button
+											color="alternative"
+											size="sm"
+											target="_blank"
+											href="/preview?sessionId={session.id}">Preview</Button
+										>
+										<ConfirmButton
+											action="?/endSession"
+											fields={{ sessionId: session.id }}
+											label="End Session"
+											size="sm"
+											title="End this session?"
+											message={`Ending "${session.name}" disconnects everyone sharing into it. This can't be undone.`}
+										/>
+									</div>
+								</TableBodyCell>
+							</TableBodyRow>
+						{/each}
+					</TableBody>
+				</Table>
+			{/if}
+		</section>
 
-	<h2 class="mt-5 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Ended Sessions</h2>
-	<div class="mt-6 mb-20">
-		{#if endedSessions.length === 0}
-			<p class="text-gray-900 dark:text-gray-300">No ended sessions</p>
-		{:else}
-			<ul class="flex flex-col gap-2 overflow-auto text-center">
-				{#each endedSessions as session}
-					<li
-						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
-					>
-						<span class="flex-1 text-gray-900 md:block dark:text-gray-300">{session.name}</span>
-						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300">{session.id}</span
-						>
-						<Button color="alternative" href="/recordings?sessionId={session.id}"
-							>View Recordings</Button
-						>
-						<ConfirmButton
-							action="?/deleteSession"
-							fields={{ sessionId: session.id }}
-							label="Delete Session"
-							title="Delete this session?"
-							message={`Deleting "${session.name}" removes it from SyncFlow. This can't be undone.`}
-						/>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</div>
+		<section class="flex flex-col gap-4">
+			<Heading tag="h3" class="text-lg">Ended sessions</Heading>
+			{#if endedSessions.length === 0}
+				<P class="text-sm text-gray-500 dark:text-gray-400">No ended sessions.</P>
+			{:else}
+				<Table hoverable>
+					<TableHead>
+						<TableHeadCell>Name</TableHeadCell>
+						<TableHeadCell class="hidden md:table-cell">ID</TableHeadCell>
+						<TableHeadCell><span class="sr-only">Actions</span></TableHeadCell>
+					</TableHead>
+					<TableBody>
+						{#each endedSessions as session (session.id)}
+							<TableBodyRow>
+								<TableBodyCell>{session.name}</TableBodyCell>
+								<TableBodyCell class="hidden font-mono text-xs md:table-cell"
+									>{session.id}</TableBodyCell
+								>
+								<TableBodyCell>
+									<div class="flex justify-end gap-2">
+										<Button color="alternative" size="sm" href="/recordings?sessionId={session.id}"
+											>Recordings</Button
+										>
+										<ConfirmButton
+											action="?/deleteSession"
+											fields={{ sessionId: session.id }}
+											label="Delete Session"
+											size="sm"
+											title="Delete this session?"
+											message={`Deleting "${session.name}" removes it from SyncFlow. This can't be undone.`}
+										/>
+									</div>
+								</TableBodyCell>
+							</TableBodyRow>
+						{/each}
+					</TableBody>
+				</Table>
+			{/if}
+		</section>
+	</Card>
 </div>

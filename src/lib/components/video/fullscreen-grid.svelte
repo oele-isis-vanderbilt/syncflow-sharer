@@ -12,7 +12,7 @@
 </script>
 
 <script lang="ts">
-	import { Tooltip } from 'flowbite-svelte';
+	import { Button, Heading, Tooltip } from 'flowbite-svelte';
 	import Fullscreen from './fullscreen.svelte';
 	import { CompressOutline, ExpandOutline } from 'flowbite-svelte-icons';
 	import { PaginationNav } from 'flowbite-svelte';
@@ -76,25 +76,32 @@
 
 <Fullscreen>
 	{#snippet header(isFull: boolean, requestFs: () => void)}
-		<div class={['flex w-full flex-row p-2', isFull ? 'justify-between' : 'justify-end']}>
+		<div
+			class={[
+				'flex w-full flex-row items-center gap-4',
+				isFull ? 'justify-between bg-white p-4 dark:bg-gray-900' : 'justify-end'
+			]}
+		>
 			{#if isFull}
-				<h3 class="font-semibold text-gray-900 md:text-xl dark:text-gray-300">Video Streams</h3>
+				<Heading tag="h2" class="text-xl">Video streams</Heading>
 				{#if numPages > 1}
 					<PaginationNav {currentPage} totalPages={numPages} {onPageChange} />
 				{/if}
 			{/if}
-			<div class="h-5 w-5">
-				<button onclick={requestFs} class="text-gray-900 dark:text-gray-300">
-					{#if isFull}
-						<CompressOutline class="h-5 w-5" />
-					{:else}
-						<ExpandOutline class="h-5 w-5" />
-					{/if}
-				</button>
-			</div>
-			<Tooltip class="dark:bg-gray-900" placement="bottom-start"
-				>{isFull ? 'Exit' : 'Enter'} Full screen(grid) view</Tooltip
+			<Button
+				color="alternative"
+				size="sm"
+				class="p-2"
+				aria-label={isFull ? 'Exit full-screen grid' : 'Open all videos in a full-screen grid'}
+				onclick={requestFs}
 			>
+				{#if isFull}
+					<CompressOutline class="h-5 w-5" />
+				{:else}
+					<ExpandOutline class="h-5 w-5" />
+				{/if}
+			</Button>
+			<Tooltip placement="bottom-start">{isFull ? 'Exit' : 'Open'} full-screen grid</Tooltip>
 		</div>
 	{/snippet}
 	{#snippet content()}

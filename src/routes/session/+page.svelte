@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from 'flowbite-svelte';
+	import { Badge, Button, Card, Heading, P, Spinner } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	import {
@@ -312,70 +312,78 @@
 	const attachLocalAudios = attachAudioSource;
 </script>
 
-<div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
-	<div class="text-center">
-		<h2 class="text-lg font-bold text-gray-900 italic dark:text-gray-300">
-			You are sharing to session {data.sharingDetails.sessionName} as {data.sharingDetails.identity}
-		</h2>
-		{#if data.sharingDetails.audioDeviceIds.length > 0}
-			<p class="text-gray-900 dark:text-gray-300">
-				Audio Devices: {data.sharingDetails.audioDeviceIds.map(getSelectedDeviceName).join(',')} (Enabled:
-				{data.sharingDetails.enableAudio})
-			</p>
-		{/if}
-		{#if data.sharingDetails.videoDeviceIds.length > 0}
-			<p class="text-gray-900 dark:text-gray-300">
-				Video Devices: {data.sharingDetails.videoDeviceIds.map(getSelectedDeviceName).join(',')} (Enabled:
-				{data.sharingDetails.enableCamera})
-			</p>
-		{/if}
-
-		<p class="text-gray-900 dark:text-gray-300">
-			Screen Share: {data.sharingDetails.screenShareEnabled ? 'Enabled' : 'Disabled'}
-		</p>
-		<Button color="red" class="mt-4 w-full" onclick={stopPublishing}>Stop Sharing</Button>
-		{#if publicationsReady}
-			<div class="mt-2 flex flex-col gap-2 md:flex-row">
-				<div class="w-full items-center md:w-1/3">
-					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Audio Tracks</h2>
-					{#if data.sharingDetails.enableAudio}
-						<!-- <audio use:attachLocalAudio class="w-full" controls></audio> -->
-						<div
-							use:attachLocalAudios
-							class="flex flex-col items-center justify-center gap-2 dark:bg-gray-700"
-						></div>
-					{:else}
-						<p class="text-gray-900 dark:text-gray-300">Audio Disabled</p>
-					{/if}
-				</div>
-				<div class="w-full md:w-1/3">
-					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Video Tracks</h2>
-					{#if data.sharingDetails.enableCamera}
-						<div
-							use:attachLocalVideos
-							class="flex flex-col items-center justify-center gap-2 dark:bg-gray-700"
-						></div>
-					{:else}
-						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
-							<p class="text-gray-900 dark:text-gray-300">Video Disabled</p>
-						</div>
-					{/if}
-				</div>
-				<div class="w-full md:w-1/3">
-					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-300">Screen Share</h2>
-					{#if data.sharingDetails.screenShareEnabled}
-						<!-- svelte-ignore a11y_media_has_caption -->
-						<div
-							use:attachLocalScreen
-							class="flex flex-col items-center justify-center dark:bg-gray-700"
-						></div>
-					{:else}
-						<div class="flex h-32 flex-col items-center justify-center dark:bg-gray-700">
-							<p class="text-gray-900 dark:text-gray-300">Screen Share Disabled</p>
-						</div>
-					{/if}
-				</div>
-			</div>
+{#snippet status(label: string, on: boolean, detail: string)}
+	<div class="flex flex-wrap items-center gap-2">
+		<span class="text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+		<Badge color={on ? 'green' : 'gray'}>{on ? 'On' : 'Off'}</Badge>
+		{#if detail}
+			<span class="text-sm text-gray-500 dark:text-gray-400">{detail}</span>
 		{/if}
 	</div>
+{/snippet}
+
+{#snippet disabled(text: string)}
+	<div class="flex h-32 items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-700">
+		<P class="text-sm text-gray-500 dark:text-gray-400">{text}</P>
+	</div>
+{/snippet}
+
+<div class="flex flex-col gap-6">
+	<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+		<div class="flex flex-col gap-2">
+			<Heading tag="h1" class="text-3xl md:text-4xl"
+				>Sharing to {data.sharingDetails.sessionName}</Heading
+			>
+			<P class="text-gray-500 dark:text-gray-400">as {data.sharingDetails.identity}</P>
+		</div>
+		<Button color="red" onclick={stopPublishing}>Stop Sharing</Button>
+	</div>
+
+	<Card size="xl" class="flex flex-col gap-3 p-4 sm:p-6">
+		{@render status(
+			'Audio',
+			data.sharingDetails.enableAudio,
+			data.sharingDetails.audioDeviceIds.map(getSelectedDeviceName).join(', ')
+		)}
+		{@render status(
+			'Camera',
+			data.sharingDetails.enableCamera,
+			data.sharingDetails.videoDeviceIds.map(getSelectedDeviceName).join(', ')
+		)}
+		{@render status('Screen share', data.sharingDetails.screenShareEnabled, '')}
+	</Card>
+
+	{#if !publicationsReady}
+		<div class="flex items-center gap-3" role="status">
+			<Spinner size="6" />
+			<P class="text-gray-500 dark:text-gray-400">Connecting and publishing your tracks…</P>
+		</div>
+	{:else}
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+			<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
+				<Heading tag="h2" class="text-xl">Audio tracks</Heading>
+				{#if data.sharingDetails.enableAudio}
+					<div use:attachLocalAudios class="flex flex-col gap-2"></div>
+				{:else}
+					{@render disabled('Audio disabled')}
+				{/if}
+			</Card>
+			<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
+				<Heading tag="h2" class="text-xl">Video tracks</Heading>
+				{#if data.sharingDetails.enableCamera}
+					<div use:attachLocalVideos class="flex flex-col gap-2"></div>
+				{:else}
+					{@render disabled('Video disabled')}
+				{/if}
+			</Card>
+			<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
+				<Heading tag="h2" class="text-xl">Screen share</Heading>
+				{#if data.sharingDetails.screenShareEnabled}
+					<div use:attachLocalScreen class="flex flex-col gap-2"></div>
+				{:else}
+					{@render disabled('Screen share disabled')}
+				{/if}
+			</Card>
+		</div>
+	{/if}
 </div>

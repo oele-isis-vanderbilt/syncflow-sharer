@@ -1,11 +1,31 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData } from './$types';
-	import { Accordion, AccordionItem, Button, Toggle } from 'flowbite-svelte';
+	import {
+		Accordion,
+		AccordionItem,
+		Badge,
+		Button,
+		Card,
+		Heading,
+		P,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Toast,
+		Toggle
+	} from 'flowbite-svelte';
+	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
+
+	type Recording = PageData['recordings'][number];
 
 	const { data }: { data: PageData } = $props();
 
 	let mode = $state<'participant' | 'all'>('participant');
+	let downloadError = $state(false);
 
 	const recordingsByPartcipants = data.recordings.reduce(
 		(acc, recording) => {
@@ -16,7 +36,7 @@
 			acc[participant].push(recording);
 			return acc;
 		},
-		{} as Record<string, any>
+		{} as Record<string, Recording[]>
 	);
 
 	function getFileName(path: string) {
@@ -30,114 +50,91 @@
 	}
 </script>
 
-<div class="max-w-8xl mx-auto flex flex-col px-6 py-6 lg:px-6 lg:py-6">
-	<h2 class="font-semibold text-gray-900 md:text-2xl dark:text-gray-300">
-		Session ({data.sessionDetails.name})
-	</h2>
-	<div>
-		<span class="text-gray-900 dark:text-gray-300">
-			BucketName: {data.s3BucketName}
-		</span>
-	</div>
-	<div class="mt-5 flex flex-row justify-between">
-		<h2 class=" font-semibold text-gray-900 md:text-xl dark:text-gray-300">Recordings</h2>
-		<Toggle
-			checked={mode === 'participant'}
-			onchange={() => {
-				mode = mode === 'participant' ? 'all' : 'participant';
-			}}
-		>
-			Group by Participant
-		</Toggle>
-	</div>
-	<div class="mt-6 mb-20">
-		{#if data.recordings.length === 0}
-			<p class="text-gray-900 dark:text-gray-300">Recordings not Found and or empty.</p>
-		{:else if mode === 'participant'}
-			<Accordion class="mb-20 h-full w-full">
-				{#each Object.entries(recordingsByPartcipants) as [participant, recordings]}
-					<AccordionItem>
-						{#snippet header()}{participant}{/snippet}
-						<ul class="flex w-full flex-col gap-2 overflow-auto text-center">
-							{#each recordings as recording}
-								<li
-									class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
-								>
-									<span class="flex-1 text-gray-900 md:block dark:text-gray-300"
-										>{getFileName(recording.destination || '/')}</span
-									>
-									<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
-										>{recording.trackId}</span
-									>
-									<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
-										>{recording.status}</span
-									>
-									<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
-										>{new Date(recording.startedAt / 1000000).toLocaleString()}</span
-									>
-
-									<form
-										method="POST"
-										action="?/getFileUrl"
-										use:enhance={(/*params*/) => {
-											return async ({ result }) => {
-												if (result.status === 200) {
-													window.open(result.data.url, '_blank');
-												} else {
-													alert('Failed to download file');
-												}
-											};
-										}}
-									>
-										<input type="hidden" name="sessionId" value={recording.sessionId} />
-										<input type="hidden" name="destination" value={recording.destination} />
-										<Button type="submit" color="alternative">Download</Button>
-									</form>
-								</li>
-							{/each}
-						</ul>
-					</AccordionItem>
-				{/each}
-			</Accordion>
-		{:else}
-			<ul class="flex w-full flex-col gap-2 overflow-auto text-center">
-				{#each data.recordings as recording}
-					<li
-						class="flex flex-col items-center justify-between gap-2 rounded-lg bg-gray-100 p-2 text-center md:flex-row dark:bg-gray-800"
+{#snippet recordingsTable(recordings: Recording[])}
+	<Table hoverable>
+		<TableHead>
+			<TableHeadCell>File</TableHeadCell>
+			<TableHeadCell class="hidden md:table-cell">Track</TableHeadCell>
+			<TableHeadCell class="hidden md:table-cell">Status</TableHeadCell>
+			<TableHeadCell class="hidden md:table-cell">Started</TableHeadCell>
+			<TableHeadCell><span class="sr-only">Download</span></TableHeadCell>
+		</TableHead>
+		<TableBody>
+			{#each recordings as recording}
+				<TableBodyRow>
+					<TableBodyCell class="font-mono text-xs"
+						>{getFileName(recording.destination || '/')}</TableBodyCell
 					>
-						<span class="flex-1 text-gray-900 md:block dark:text-gray-300"
-							>{getFileName(recording.destination || '/')}</span
-						>
-						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
-							>{recording.trackId}</span
-						>
-						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
-							>{recording.status}</span
-						>
-						<span class="hidden flex-1 text-gray-900 md:block dark:text-gray-300"
-							>{new Date(recording.startedAt / 1000000).toLocaleString()}</span
-						>
-
+					<TableBodyCell class="hidden font-mono text-xs md:table-cell"
+						>{recording.trackId}</TableBodyCell
+					>
+					<TableBodyCell class="hidden md:table-cell">
+						<Badge color="gray">{recording.status}</Badge>
+					</TableBodyCell>
+					<TableBodyCell class="hidden md:table-cell"
+						>{new Date(recording.startedAt / 1000000).toLocaleString()}</TableBodyCell
+					>
+					<TableBodyCell class="text-end">
 						<form
 							method="POST"
 							action="?/getFileUrl"
-							use:enhance={(/*params*/) => {
+							use:enhance={() => {
 								return async ({ result }) => {
 									if (result.status === 200) {
 										window.open(result.data.url, '_blank');
 									} else {
-										alert('Failed to download file');
+										downloadError = true;
 									}
 								};
 							}}
 						>
 							<input type="hidden" name="sessionId" value={recording.sessionId} />
 							<input type="hidden" name="destination" value={recording.destination} />
-							<Button type="submit" color="alternative">Download</Button>
+							<Button type="submit" color="alternative" size="sm">Download</Button>
 						</form>
-					</li>
-				{/each}
-			</ul>
-		{/if}
+					</TableBodyCell>
+				</TableBodyRow>
+			{/each}
+		</TableBody>
+	</Table>
+{/snippet}
+
+<div class="flex flex-col gap-6">
+	<div class="flex flex-col gap-2">
+		<Heading tag="h1" class="text-3xl md:text-4xl">Recordings: {data.sessionDetails.name}</Heading>
+		<P class="text-sm text-gray-500 dark:text-gray-400">Bucket: {data.s3BucketName}</P>
 	</div>
+
+	<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
+		<div class="flex flex-row items-center justify-between gap-4">
+			<Heading tag="h2" class="text-xl">Files</Heading>
+			<Toggle
+				checked={mode === 'participant'}
+				onchange={() => {
+					mode = mode === 'participant' ? 'all' : 'participant';
+				}}>Group by participant</Toggle
+			>
+		</div>
+		{#if data.recordings.length === 0}
+			<P class="text-sm text-gray-500 dark:text-gray-400">No recordings found for this session.</P>
+		{:else if mode === 'participant'}
+			<Accordion>
+				{#each Object.entries(recordingsByPartcipants) as [participant, recordings] (participant)}
+					<AccordionItem>
+						{#snippet header()}{participant}{/snippet}
+						{@render recordingsTable(recordings)}
+					</AccordionItem>
+				{/each}
+			</Accordion>
+		{:else}
+			{@render recordingsTable(data.recordings)}
+		{/if}
+	</Card>
 </div>
+
+{#if downloadError}
+	<Toast color="red" class="fixed end-5 bottom-5 z-50" bind:toastStatus={downloadError}>
+		{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+		Failed to download the file.
+	</Toast>
+{/if}

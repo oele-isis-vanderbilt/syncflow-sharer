@@ -16,7 +16,7 @@
 	>
 		<Navbar user={data.user?.name} />
 	</header>
-	<main class="min-w-0 flex-1">
+	<main class="mx-auto w-full max-w-screen-xl min-w-0 flex-1 px-4 py-8">
 		{@render children()}
 	</main>
 	<Footer />
