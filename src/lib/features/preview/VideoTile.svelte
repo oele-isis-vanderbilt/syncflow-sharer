@@ -27,7 +27,7 @@
 					<Button
 						color="alternative"
 						size="xs"
-						class="p-1.5"
+						class="p-2"
 						aria-label="View {label} full screen"
 						onclick={() => requestFs()}
 					>

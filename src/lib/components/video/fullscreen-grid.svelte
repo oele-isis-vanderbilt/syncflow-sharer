@@ -24,6 +24,10 @@
 
 	const maxCols = 4;
 	const maxRows = 3;
+
+	// Full class names so Tailwind generates them (no dynamic `grid-cols-${n}`).
+	const colClasses = ['grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'];
+	const rowClasses = ['grid-rows-1', 'grid-rows-2', 'grid-rows-3'];
 	const maxPerPage = maxCols * maxRows;
 
 	const paginator = new Paginator<TrackSubscription>(videos, maxPerPage);
@@ -105,13 +109,11 @@
 		</div>
 	{/snippet}
 	{#snippet content()}
-		<div
-			class="grid h-full w-full gap-2"
-			style={`grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`}
-		>
+		<div class={['grid h-full w-full gap-2', colClasses[cols - 1], rowClasses[rows - 1]]}>
 			{#each currentItems as trackSubscription}
 				<div class="relative h-full w-full">
 					<VideoTrack subscription={trackSubscription} />
+					<!-- Caption scrim over video: dark in both themes so it reads on any frame. -->
 					<div class="absolute inset-0">
 						<div class="flex w-full flex-col items-center p-2 opacity-80">
 							<p class="bg-gray-950 text-center text-gray-300">{trackSubscription.participant}</p>
