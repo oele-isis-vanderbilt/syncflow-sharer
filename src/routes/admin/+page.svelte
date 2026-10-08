@@ -22,50 +22,33 @@
 
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import type { ActionData } from '../$types';
+	import type { ActionData } from './$types';
 
 	const { data, form }: { data: PageData; form: ActionData } = $props();
 	const sessions = $derived(data.sessions.active);
 	const endedSessions = $derived(data.sessions.ended);
 
 	let currentSettings = $derived(data.settings);
-	let settingsState = $state({
-		enabled: data.settings.enabled,
-		enableAudio: data.settings.enableAudio,
-		enableCamera: data.settings.enableCamera,
-		enableScreenShare: data.settings.enableScreenShare,
-		sessionName: data.settings.sessionName ?? '',
-		recordSession: data.settings.recordSession,
-		selectedDevices: data.settings.selectedDevices || []
-	});
+	// Form fields start from the saved settings and reset when they change (writable $derived).
+	let enabled = $derived(data.settings.enabled);
+	let enableAudio = $derived(data.settings.enableAudio);
+	let enableCamera = $derived(data.settings.enableCamera);
+	let enableScreenShare = $derived(data.settings.enableScreenShare);
+	let sessionName = $derived(data.settings.sessionName ?? '');
+	let recordSession = $derived(data.settings.recordSession);
+	let selectedDevices = $derived(data.settings.selectedDevices || []);
 
 	let enableUpdate = $derived.by(() => {
 		return (
-			currentSettings.enabled !== settingsState.enabled ||
-			currentSettings.enableAudio !== settingsState.enableAudio ||
-			currentSettings.enableCamera !== settingsState.enableCamera ||
-			currentSettings.enableScreenShare !== settingsState.enableScreenShare ||
-			(currentSettings.sessionName ?? '') !== settingsState.sessionName ||
-			currentSettings.recordSession !== settingsState.recordSession ||
-			currentSettings.selectedDevices.some(
-				(device) => !settingsState.selectedDevices.includes(device)
-			) ||
-			settingsState.selectedDevices.some(
-				(device) => !currentSettings.selectedDevices.includes(device)
-			)
+			currentSettings.enabled !== enabled ||
+			currentSettings.enableAudio !== enableAudio ||
+			currentSettings.enableCamera !== enableCamera ||
+			currentSettings.enableScreenShare !== enableScreenShare ||
+			(currentSettings.sessionName ?? '') !== sessionName ||
+			currentSettings.recordSession !== recordSession ||
+			currentSettings.selectedDevices.some((device) => !selectedDevices.includes(device)) ||
+			selectedDevices.some((device) => !currentSettings.selectedDevices.includes(device))
 		);
-	});
-
-	$effect(() => {
-		settingsState = {
-			enabled: data.settings.enabled,
-			enableAudio: data.settings.enableAudio,
-			enableCamera: data.settings.enableCamera,
-			enableScreenShare: data.settings.enableScreenShare,
-			sessionName: data.settings.sessionName ?? '',
-			recordSession: data.settings.recordSession,
-			selectedDevices: data.settings.selectedDevices || []
-		};
 	});
 
 	let devicesToNotify = $derived(
@@ -89,44 +72,38 @@
 	<Card size="xl" class="p-4 sm:p-6">
 		<Heading tag="h2" class="text-xl">SyncFlow settings</Heading>
 		<form class="mt-4 flex flex-col gap-6" method="POST" action="?/updateSettings" use:enhance>
-			<Toggle
-				bind:checked={settingsState.enabled}
-				name="enabled"
-				value={settingsState.enabled ? 'yes' : 'no'}>SyncFlow pipeline enabled</Toggle
+			<Toggle bind:checked={enabled} name="enabled" value={enabled ? 'yes' : 'no'}
+				>SyncFlow pipeline enabled</Toggle
 			>
-			{#if settingsState.enabled}
-				<Toggle
-					name="enableAudio"
-					bind:checked={settingsState.enableAudio}
-					value={settingsState.enableAudio ? 'yes' : 'no'}>Enable audio sharing</Toggle
+			{#if enabled}
+				<Toggle name="enableAudio" bind:checked={enableAudio} value={enableAudio ? 'yes' : 'no'}
+					>Enable audio sharing</Toggle
 				>
-				<Toggle
-					name="enableCamera"
-					bind:checked={settingsState.enableCamera}
-					value={settingsState.enableCamera ? 'yes' : 'no'}>Enable camera sharing</Toggle
+				<Toggle name="enableCamera" bind:checked={enableCamera} value={enableCamera ? 'yes' : 'no'}
+					>Enable camera sharing</Toggle
 				>
 				<Toggle
 					name="enableScreenShare"
-					bind:checked={settingsState.enableScreenShare}
-					value={settingsState.enableScreenShare ? 'yes' : 'no'}>Enable screen sharing</Toggle
+					bind:checked={enableScreenShare}
+					value={enableScreenShare ? 'yes' : 'no'}>Enable screen sharing</Toggle
 				>
 				<Toggle
 					name="recordSession"
-					bind:checked={settingsState.recordSession}
-					value={settingsState.recordSession ? 'yes' : 'no'}>Record session</Toggle
+					bind:checked={recordSession}
+					value={recordSession ? 'yes' : 'no'}>Record session</Toggle
 				>
 				<FormField
 					id="sessionName"
 					label="Session name"
 					placeholder="Session name"
-					bind:value={settingsState.sessionName}
+					bind:value={sessionName}
 				/>
 				<Label class="flex flex-col gap-2">
 					Devices to notify
 					<MultiSelect
 						placeholder="Select devices to notify"
 						items={selectedDevicesChoices}
-						bind:value={settingsState.selectedDevices}
+						bind:value={selectedDevices}
 						name="selectedDevices"
 					/>
 				</Label>

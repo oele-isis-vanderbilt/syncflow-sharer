@@ -25,7 +25,7 @@ pnpm check:design   # design-system checker (docs/design-rules.md)
 
 If you add a dependency with an install script, add it to `allowBuilds` in `pnpm-workspace.yaml` or pnpm will skip its build. pnpm does not hoist undeclared packages, so import only what `package.json` lists.
 
-There are no tests. After changes, run `pnpm exec prettier --check .`, `pnpm check`, `pnpm check:design` and `pnpm build`. `pnpm check` currently fails on existing issues (about 36 type errors, for example `App.Locals` has no `user` type) and `pnpm check:design` on 28 existing palette violations. Prettier and the build pass. Do not add new errors; fix existing ones only when asked.
+There are no tests. After changes, run `pnpm exec prettier --check .`, `pnpm check`, `pnpm check:design` and `pnpm build`. `pnpm check` currently fails on existing issues (about 29 type errors, for example `App.Locals` has no `user` type). `pnpm check:design`, Prettier and the build pass. Do not add new errors; fix existing ones only when asked.
 
 ## Layout
 

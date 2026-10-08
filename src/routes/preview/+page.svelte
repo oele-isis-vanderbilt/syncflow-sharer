@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import * as livekit from 'livekit-client';
 	import type { TrackSubscription } from '$lib/components/video';
@@ -24,6 +24,14 @@
 	const subscribedAudioTracks = $state<Record<string, TrackSubscription>>({});
 	const subscrbedVideoTracks = $state<Record<string, TrackSubscription>>({});
 	let room = $state<livekit.Room | null>(null);
+
+	interface DataMessage {
+		at: string;
+		from: string;
+		text: string;
+	}
+	let dataMessages = $state<DataMessage[]>([]);
+	const decoder = new TextDecoder();
 
 	function handleTrackUnsubscribed(
 		track: livekit.RemoteTrack,
@@ -156,6 +164,14 @@
 			});
 		});
 
+		room.on('dataReceived', (payload, participant) => {
+			dataMessages.push({
+				at: new Date().toLocaleString(),
+				from: participant?.identity ?? 'unknown',
+				text: decoder.decode(payload)
+			});
+		});
+
 		// Now connect and handle initial tracks
 		room.prepareConnection(data.token.livekitServerUrl!, data.token.token);
 		await room.connect(data.token.livekitServerUrl!, data.token.token);
@@ -171,25 +187,16 @@
 		}, 1000);
 	});
 
-	function appendDataMessages(node: HTMLDivElement) {
+	// Leaving the page: drop listeners first so 'disconnected' doesn't redirect, then leave.
+	onDestroy(() => {
+		room?.removeAllListeners();
+		room?.disconnect();
+	});
+
+	/** Keeps the text-stream log scrolled to the newest message. */
+	function scrollToEnd(node: HTMLElement) {
 		$effect(() => {
-			if (node) {
-				const encoder = new TextDecoder();
-				room?.on('dataReceived', (payload: Uint8Array, participant, kind, topic) => {
-					const span = document.createElement('span');
-
-					let stringContent = encoder.decode(payload);
-
-					const timestamp = new Date().toLocaleString();
-
-					span.className =
-						'block font-mono text-sm p-1 border-b border-gray-200 dark:border-gray-700 break-words max-w-full';
-					span.textContent = `[${timestamp}] ${participant?.identity}: ${stringContent}`;
-
-					node.appendChild(span);
-					node.scroll({ top: node.scrollHeight, behavior: 'smooth' });
-				});
-			}
+			if (dataMessages.length) node.scroll({ top: node.scrollHeight, behavior: 'smooth' });
 		});
 	}
 
@@ -390,7 +397,16 @@
 			class="flex h-96 flex-col overflow-auto rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100"
 			role="log"
 			aria-live="polite"
-			use:appendDataMessages
-		></div>
+			use:scrollToEnd
+		>
+			{#each dataMessages as message, i (i)}
+				<span
+					class="block max-w-full border-b border-gray-200 p-1 font-mono text-sm break-words dark:border-gray-700"
+					>[{message.at}] {message.from}: {message.text}</span
+				>
+			{:else}
+				<span class="p-2 text-sm text-gray-500 dark:text-gray-400">No messages yet.</span>
+			{/each}
+		</div>
 	</Card>
 </div>
