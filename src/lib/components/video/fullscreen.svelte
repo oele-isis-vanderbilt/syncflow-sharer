@@ -42,9 +42,11 @@
 	};
 
 	onMount(() => {
-		fsContainer?.addEventListener('fullscreenchange', (e) => {
+		const onChange = () => {
 			isFull = !!document.fullscreenElement;
-		});
+		};
+		fsContainer?.addEventListener('fullscreenchange', onChange);
+		return () => fsContainer?.removeEventListener('fullscreenchange', onChange);
 	});
 
 	// handler for the fullscreen button

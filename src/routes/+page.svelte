@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Button, Input, Label, P, Select } from 'flowbite-svelte';
+	import { Alert, Button, Card, Heading, Label, P, Select } from 'flowbite-svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
+	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 	import { Room } from 'livekit-client';
@@ -115,109 +117,89 @@
 	}
 </script>
 
-<div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
+<div class="flex flex-col gap-6">
+	<Heading tag="h1" class="text-3xl md:text-4xl">Share to a session</Heading>
 	{#if data.error}
-		<h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-300">
-			Error Fetching Sessions From SyncFlow
-		</h2>
-		<pre
-			class="mt-2 w-full overflow-auto bg-gray-300 p-2 text-black dark:bg-gray-800 dark:text-gray-300">{JSON.stringify(
-				data.error,
-				null,
-				2
-			)}</pre>
+		<Alert color="red">
+			{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+			<span class="font-medium">Couldn't fetch sessions from SyncFlow.</span>
+			<pre class="mt-2 overflow-auto text-xs">{JSON.stringify(data.error, null, 2)}</pre>
+		</Alert>
 	{:else}
-		<div class="w-full">
+		<Card size="xl" class="p-4 sm:p-6">
 			<DeviceSelector
 				bind:audioDeviceIds={userSelections.audioDeviceIds}
 				bind:videoDeviceIds={userSelections.videoDeviceIds}
 			/>
-		</div>
-		<div class="w-full">
+		</Card>
+		<Card size="xl" class="p-4 sm:p-6">
 			<CodecSelector
 				bind:selectedVideoCodec={userSelections.videoCodec}
 				bind:selectedAudioPreset={userSelections.audioPreset}
 				bind:selectedVideoPreset={userSelections.videoPreset}
 			/>
-		</div>
-		<h2 class="mt-5 text-lg font-semibold text-gray-900 dark:text-gray-300">
-			Select Session to Share
-		</h2>
-
-		{#if selections.length !== 0}
-			<form
-				class="mt-2 w-full p-2"
-				method="POST"
-				action="?/generateSessionToken"
-				use:enhance={(/*params*/) => {
-					return async ({ result }) => {
-						if (result.type === 'success') {
-							const tokenDetails = result.data?.token;
-							if (tokenDetails) {
-								let url = new URL('session', window.location.origin);
-								url.searchParams.set('token', tokenDetails.token as string);
-								url.searchParams.set('livekitUrl', tokenDetails.livekitServerUrl as string);
-								url.searchParams.set('sessionName', getSelectedSessionName() || '');
-								url.searchParams.set('sessionId', selected);
-								url.searchParams.set('videoDeviceIds', userSelections.videoDeviceIds.join(','));
-								url.searchParams.set('audioDeviceIds', userSelections.audioDeviceIds.join(','));
-								url.searchParams.set('identity', identity);
-								url.searchParams.set(
-									'screenShareEnabled',
-									settings?.enableScreenShare ? 'true' : 'false'
-								);
-								url.searchParams.set('enableCamera', settings?.enableCamera ? 'true' : 'false');
-								url.searchParams.set('enableAudio', settings?.enableAudio ? 'true' : 'false');
-								url.searchParams.set('videoCodec', userSelections.videoCodec);
-								url.searchParams.set('videoPreset', userSelections.videoPreset);
-								url.searchParams.set('audioPreset', userSelections.audioPreset);
-								window.location.href = url.toString();
+		</Card>
+		<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
+			<Heading tag="h2" class="text-xl">Select a session</Heading>
+			{#if selections.length !== 0}
+				<form
+					class="flex flex-col gap-4"
+					method="POST"
+					action="?/generateSessionToken"
+					use:enhance={(/*params*/) => {
+						return async ({ result }) => {
+							if (result.type === 'success') {
+								const tokenDetails = result.data?.token;
+								if (tokenDetails) {
+									let url = new URL('session', window.location.origin);
+									url.searchParams.set('token', tokenDetails.token as string);
+									url.searchParams.set('livekitUrl', tokenDetails.livekitServerUrl as string);
+									url.searchParams.set('sessionName', getSelectedSessionName() || '');
+									url.searchParams.set('sessionId', selected);
+									url.searchParams.set('videoDeviceIds', userSelections.videoDeviceIds.join(','));
+									url.searchParams.set('audioDeviceIds', userSelections.audioDeviceIds.join(','));
+									url.searchParams.set('identity', identity);
+									url.searchParams.set(
+										'screenShareEnabled',
+										settings?.enableScreenShare ? 'true' : 'false'
+									);
+									url.searchParams.set('enableCamera', settings?.enableCamera ? 'true' : 'false');
+									url.searchParams.set('enableAudio', settings?.enableAudio ? 'true' : 'false');
+									url.searchParams.set('videoCodec', userSelections.videoCodec);
+									url.searchParams.set('videoPreset', userSelections.videoPreset);
+									url.searchParams.set('audioPreset', userSelections.audioPreset);
+									window.location.href = url.toString();
+								}
 							}
-						}
-					};
-				}}
-			>
-				<Label>
-					Select a Session
-					<Select
-						class="mt-2"
-						items={selections}
-						bind:value={selected}
-						id="sessionId"
-						name="sessionId"
-					/>
-				</Label>
-				<div class="mb-3 mt-2">
-					<Label for="identity" class="mb-2 block">Enter Identity</Label>
-					<Input
-						type="text"
+						};
+					}}
+				>
+					<Label class="flex flex-col gap-2">
+						Session
+						<Select items={selections} bind:value={selected} id="sessionId" name="sessionId" />
+					</Label>
+					<FormField
 						id="identity"
-						name="identity"
+						label="Identity"
+						placeholder="Participant identity"
+						helper="The name others see for your tracks."
 						bind:value={identity}
-						size="md"
-						placeholder="Participant Identity"
 					/>
-				</div>
-				{#if sessionSharingErrors}
-					<span class="text-sm text-red-500">{sessionSharingErrors}</span>
-				{/if}
-
-				{#if canShareSession}
-					<Button
-						type="submit"
-						class="mt-4 w-full rounded bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-700"
-						>Share</Button
-					>
-				{/if}
-			</form>
-		{/if}
-		{#if selections.length === 0}
-			<div class="p-2 text-xs text-gray-900 dark:text-gray-300">
-				No active sessions to share to. Please wait for the session to start.
-			</div>
-		{/if}
-	{/if}
-	{#if form?.success}
-		<div>{JSON.stringify(form?.data)}</div>
+					{#if sessionSharingErrors}
+						<Alert color="red">
+							{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+							{sessionSharingErrors}
+						</Alert>
+					{/if}
+					{#if canShareSession}
+						<Button type="submit" color="primary" class="w-full">Share</Button>
+					{/if}
+				</form>
+			{:else}
+				<P class="text-sm text-gray-500 dark:text-gray-400">
+					No active sessions to share to. Please wait for the session to start.
+				</P>
+			{/if}
+		</Card>
 	{/if}
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Room } from 'livekit-client';
 	import { onMount } from 'svelte';
-	import { Label, MultiSelect } from 'flowbite-svelte';
+	import { Heading, Label, MultiSelect } from 'flowbite-svelte';
 
 	let { audioDeviceIds = $bindable([]), videoDeviceIds = $bindable([]) } = $props();
 	let audioDevicesSelect = $state<{ name: string; value: string }[]>([]);
@@ -25,8 +25,8 @@
 	});
 </script>
 
-<h3 class="text-lg font-bold text-gray-900 dark:text-gray-300">Select Devices</h3>
-<div class="mt-2 flex w-full flex-col gap-2 p-2 md:flex-row">
+<Heading tag="h2" class="text-xl">Select Devices</Heading>
+<div class="mt-4 flex w-full flex-col gap-4 md:flex-row">
 	<Label class="w-full">
 		Select Microphone(s)
 		<MultiSelect class="mt-2" items={audioDevicesSelect} bind:value={audioDeviceIds} />

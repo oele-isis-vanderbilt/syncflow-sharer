@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Navbar from '$lib/components/navbar.svelte';
 	import type { Snippet } from 'svelte';
+	import '@fontsource-variable/inter';
 	import '../app.css';
 	import type { LayoutData } from './$types';
 	import { ModeWatcher } from 'mode-watcher';
@@ -9,14 +10,14 @@
 </script>
 
 <ModeWatcher track={false} defaultMode={'dark'} />
-<header
-	class="sticky top-0 z-40 mx-auto w-full flex-none border-b border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-900"
->
-	<Navbar user={data.user?.name} />
-</header>
-<main
-	class="h-full min-w-0 flex-auto divide-y overflow-auto lg:static lg:max-h-full lg:overflow-visible dark:divide-gray-700 dark:bg-gray-900"
->
-	{@render children()}
+<div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
+	<header
+		class="sticky top-0 z-40 w-full flex-none border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
+	>
+		<Navbar user={data.user?.name} />
+	</header>
+	<main class="mx-auto w-full max-w-screen-xl min-w-0 flex-1 px-4 py-8">
+		{@render children()}
+	</main>
 	<Footer />
-</main>
+</div>
