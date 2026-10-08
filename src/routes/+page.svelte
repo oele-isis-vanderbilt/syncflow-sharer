@@ -27,7 +27,8 @@
 		videoDeviceIds: [],
 		videoCodec: '',
 		videoPreset: '',
-		audioPreset: ''
+		audioPreset: '',
+		noiseCancellation: true
 	});
 	const settings = data.settings;
 	let devices = $state<MediaDeviceInfo[]>([]);
@@ -56,6 +57,10 @@
 
 			if (!userSelections.videoCodec) {
 				userSelections.videoCodec = 'h264';
+			}
+
+			if (typeof userSelections.noiseCancellation !== 'boolean') {
+				userSelections.noiseCancellation = true;
 			}
 
 			devices = await Room.getLocalDevices();
@@ -130,6 +135,7 @@
 			<DeviceSelector
 				bind:audioDeviceIds={userSelections.audioDeviceIds}
 				bind:videoDeviceIds={userSelections.videoDeviceIds}
+				bind:noiseCancellation={userSelections.noiseCancellation}
 			/>
 		</Card>
 		<Card size="xl" class="p-4 sm:p-6">
@@ -168,6 +174,10 @@
 									url.searchParams.set('videoCodec', userSelections.videoCodec);
 									url.searchParams.set('videoPreset', userSelections.videoPreset);
 									url.searchParams.set('audioPreset', userSelections.audioPreset);
+									url.searchParams.set(
+										'noiseCancellation',
+										userSelections.noiseCancellation ? 'true' : 'false'
+									);
 									window.location.href = url.toString();
 								}
 							}

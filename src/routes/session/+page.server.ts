@@ -15,6 +15,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	const videoPreset = url.searchParams.get('videoPreset') || 'h1080';
 	const enableAudio = url.searchParams.get('enableAudio') === 'true';
 	const enableCamera = url.searchParams.get('enableCamera') === 'true';
+	const noiseCancellation = url.searchParams.get('noiseCancellation') !== 'false';
 
 	if (!lkUrl || !token || !sessionName) {
 		return error(400, 'Missing required parameters');
@@ -36,7 +37,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			enableCamera: enableCamera,
 			videoCodec: videoCodec,
 			audioPreset: audioPreset,
-			videoPreset: videoPreset
+			videoPreset: videoPreset,
+			noiseCancellation: noiseCancellation
 		}
 	};
 };

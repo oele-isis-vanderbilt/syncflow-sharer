@@ -54,7 +54,9 @@
 				resolution: getVideoPreset(data.sharingDetails.videoPreset || 'h1080')
 			},
 			audioCaptureDefaults: {
-				sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality').maxBitrate
+				sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality')
+					.maxBitrate,
+				noiseSuppression: data.sharingDetails.noiseCancellation
 			},
 			publishDefaults: {
 				videoCodec: data.sharingDetails.videoCodec || 'h264',
@@ -138,7 +140,8 @@
 		const localAudioTrack = await createLocalAudioTrack({
 			deviceId: audioDeviceId,
 			sampleRate: getAudioPreset(data.sharingDetails.audioPreset || 'musicHighQuality').maxBitrate,
-			channelCount: 1
+			channelCount: 1,
+			noiseSuppression: data.sharingDetails.noiseCancellation
 		});
 
 		const publication = await room.localParticipant.publishTrack(localAudioTrack, {
@@ -293,6 +296,9 @@
 			data.sharingDetails.enableAudio,
 			data.sharingDetails.audioDeviceIds.map(getSelectedDeviceName).join(', ')
 		)}
+		{#if data.sharingDetails.enableAudio}
+			{@render status('Noise cancellation', data.sharingDetails.noiseCancellation, '')}
+		{/if}
 		{@render status(
 			'Camera',
 			data.sharingDetails.enableCamera,
