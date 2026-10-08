@@ -1,4 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 import * as dotenv from 'dotenv';
 import adapter from '@sveltejs/adapter-node';
@@ -10,6 +11,7 @@ export default ({ mode }) => {
 	}
 	return defineConfig({
 		plugins: [
+			tailwindcss(),
 			sveltekit({
 				alias: {
 					$lib: 'src/lib'

@@ -3,7 +3,7 @@
 	import type { PageData } from './$types';
 	import * as livekit from 'livekit-client';
 	import type { TrackSubscription } from '$lib/components/video';
-	import MdFullscreen from 'svelte-icons/md/MdFullscreen.svelte';
+	import { ExpandOutline } from 'flowbite-svelte-icons';
 	import Grid from '$lib/components/video/fullscreen-grid.svelte';
 	import { goto } from '$app/navigation';
 	import { Tooltip, Button } from 'flowbite-svelte';
@@ -265,7 +265,7 @@
 </script>
 
 <div
-	class="max-w-8xl mx-auto mb-60 flex h-full flex-col gap-2 overflow-auto overflow-y-auto px-6 pb-0 pt-4 lg:px-6 lg:pt-4"
+	class="max-w-8xl mx-auto mb-60 flex h-full flex-col gap-2 overflow-auto overflow-y-auto px-6 pt-4 pb-0 lg:px-6 lg:pt-4"
 >
 	<div class="flex flex-row justify-between">
 		<div>
@@ -292,7 +292,7 @@
 	</div>
 
 	<!-- View Switcher -->
-	<div class="mb-6 mt-4 flex flex-row items-center gap-4">
+	<div class="mt-4 mb-6 flex flex-row items-center gap-4">
 		<span class="text-sm font-medium text-gray-700 dark:text-gray-300">View:</span>
 		<div class="flex rounded-lg bg-gray-200 p-1 dark:bg-gray-700">
 			<button
@@ -379,7 +379,7 @@
 													{#snippet header(isFull, requestFs)}
 														{#if !isFull}
 															<button onclick={() => requestFs()}>
-																<MdFullscreen role="button" class="p-2 text-xs" />
+																<ExpandOutline class="h-5 w-5" />
 																<Tooltip class="dark:bg-gray-900" placement="bottom-end"
 																	>Full Screen View</Tooltip
 																>
@@ -461,7 +461,7 @@
 									{#snippet header(isFull, requestFs)}
 										{#if !isFull}
 											<button onclick={() => requestFs()}>
-												<MdFullscreen role="button" class="p-2 text-xs" />
+												<ExpandOutline class="h-5 w-5" />
 												<Tooltip class="dark:bg-gray-900" placement="bottom-end"
 													>Full Screen View</Tooltip
 												>
@@ -478,7 +478,7 @@
 				{/each}
 			</div>
 
-			<h3 class="mb-4 mt-6 font-semibold text-gray-900 md:text-xl dark:text-gray-300">
+			<h3 class="mt-6 mb-4 font-semibold text-gray-900 md:text-xl dark:text-gray-300">
 				Audio Streams
 			</h3>
 			<div class="grid min-h-0 grid-cols-1 justify-start gap-2 md:grid-cols-3 lg:grid-cols-4">

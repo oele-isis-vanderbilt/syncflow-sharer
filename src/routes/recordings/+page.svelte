@@ -43,21 +43,21 @@
 		<h2 class=" font-semibold text-gray-900 md:text-xl dark:text-gray-300">Recordings</h2>
 		<Toggle
 			checked={mode === 'participant'}
-			on:change={() => {
+			onchange={() => {
 				mode = mode === 'participant' ? 'all' : 'participant';
 			}}
 		>
 			Group by Participant
 		</Toggle>
 	</div>
-	<div class="mb-20 mt-6">
+	<div class="mt-6 mb-20">
 		{#if data.recordings.length === 0}
 			<p class="text-black dark:text-gray-300">Recordings not Found and or empty.</p>
 		{:else if mode === 'participant'}
 			<Accordion class="mb-20 h-full w-full">
 				{#each Object.entries(recordingsByPartcipants) as [participant, recordings]}
 					<AccordionItem>
-						<span slot="header">{participant}</span>
+						{#snippet header()}{participant}{/snippet}
 						<ul class="flex w-full flex-col gap-2 overflow-auto text-center">
 							{#each recordings as recording}
 								<li

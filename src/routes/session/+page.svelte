@@ -314,7 +314,7 @@
 
 <div class="max-w-8xl mx-auto flex flex-col px-2 py-2">
 	<div class="text-center">
-		<h2 class="text-lg font-bold italic text-black dark:text-gray-300">
+		<h2 class="text-lg font-bold text-black italic dark:text-gray-300">
 			You are sharing to session {data.sharingDetails.sessionName} as {data.sharingDetails.identity}
 		</h2>
 		{#if data.sharingDetails.audioDeviceIds.length > 0}
@@ -335,7 +335,7 @@
 		</p>
 		<Button
 			class="mt-4 w-full rounded bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-700"
-			on:click={stopPublishing}>Stop Sharing</Button
+			onclick={stopPublishing}>Stop Sharing</Button
 		>
 		{#if publicationsReady}
 			<div class="mt-2 flex flex-col gap-2 md:flex-row">

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import Footer from '$lib/components/footer.svelte';
-
-	import { Button, Input, Label } from 'flowbite-svelte';
+	import { Alert, Button, Input, Label } from 'flowbite-svelte';
+	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 
 	import type { ActionData } from './$types';
 
@@ -34,9 +33,11 @@
 			/>
 		</Label>
 		{#if form?.incorrect}
-			<p class="text-red-800">{form?.message}</p>
+			<Alert color="red">
+				{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
+				{form?.message}
+			</Alert>
 		{/if}
-		<Button type="submit" class="w-full bg-red-800">Log in</Button>
+		<Button type="submit" color="primary" class="w-full">Log in</Button>
 	</form>
 </div>
-<Footer />

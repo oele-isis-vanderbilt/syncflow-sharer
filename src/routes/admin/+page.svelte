@@ -169,7 +169,7 @@
 	</div>
 
 	<h2 class="mt-5 font-semibold text-gray-900 md:text-xl dark:text-gray-300">Ended Sessions</h2>
-	<div class="mb-20 mt-6">
+	<div class="mt-6 mb-20">
 		{#if endedSessions.length === 0}
 			<p class="text-black dark:text-gray-300">No ended sessions</p>
 		{:else}

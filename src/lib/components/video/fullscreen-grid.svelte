@@ -14,8 +14,8 @@
 <script lang="ts">
 	import { Tooltip } from 'flowbite-svelte';
 	import Fullscreen from './fullscreen.svelte';
-	import MdFullscreen from 'svelte-icons/md/MdFullscreen.svelte';
-	import { Pagination } from 'flowbite-svelte';
+	import { CompressOutline, ExpandOutline } from 'flowbite-svelte-icons';
+	import { PaginationNav } from 'flowbite-svelte';
 
 	import { Paginator } from './paginator';
 	import VideoTrack from './video-track.svelte';
@@ -28,66 +28,49 @@
 
 	const paginator = new Paginator<TrackSubscription>(videos, maxPerPage);
 
-	let { currentItems, pages, numPages, totalCells, rows, cols, placeholders } = $derived.by(() => {
-		paginator.updateItems(videos);
-		let cols = 1;
-		let rows = 1;
+	let { currentItems, currentPage, numPages, totalCells, rows, cols, placeholders } = $derived.by(
+		() => {
+			paginator.updateItems(videos);
+			let cols = 1;
+			let rows = 1;
 
-		if (videos.length === 1) {
-			cols = 1;
-			rows = 1;
-		} else if (videos.length === 2) {
-			cols = 2;
-			rows = 1;
-		} else if (videos.length === 3) {
-			cols = 3;
-			rows = 1;
-		} else if (videos.length === 4) {
-			cols = 2;
-			rows = 2;
-		} else {
-			cols = Math.min(maxCols, videos.length);
-			rows = Math.min(maxRows, Math.ceil(videos.length / maxCols));
+			if (videos.length === 1) {
+				cols = 1;
+				rows = 1;
+			} else if (videos.length === 2) {
+				cols = 2;
+				rows = 1;
+			} else if (videos.length === 3) {
+				cols = 3;
+				rows = 1;
+			} else if (videos.length === 4) {
+				cols = 2;
+				rows = 2;
+			} else {
+				cols = Math.min(maxCols, videos.length);
+				rows = Math.min(maxRows, Math.ceil(videos.length / maxCols));
+			}
+
+			const totalCells = cols * rows;
+			const placeholders =
+				totalCells < videos.length ? [] : Array(totalCells - videos.length).fill(null);
+
+			return {
+				currentItems: paginator.currentItems,
+				currentPage: paginator.currentPage + 1,
+				numPages: paginator.totalPages,
+				totalCells,
+				rows,
+				cols,
+				placeholders
+			};
 		}
+	);
 
-		const totalCells = cols * rows;
-		const placeholders =
-			totalCells < videos.length ? [] : Array(totalCells - videos.length).fill(null);
-
-		return {
-			currentItems: paginator.currentItems,
-			pages: paginator.getFlowBitePages(),
-			numPages: paginator.totalPages,
-			totalCells,
-			rows,
-			cols,
-			placeholders
-		};
-	});
-
-	function nextPage() {
-		paginator.nextPage();
-		currentItems = paginator.currentItems;
-		pages = paginator.getFlowBitePages();
-	}
-
-	function previousPage() {
-		paginator.previousPage();
-		currentItems = paginator.currentItems;
-		pages = paginator.getFlowBitePages();
-	}
-
-	function onPageChange(event: Event) {
-		let page = 1;
-		try {
-			page = parseInt((event.target as HTMLElement).innerText);
-		} catch (e) {
-			console.error(e);
-			page = 1;
-		}
+	function onPageChange(page: number) {
 		paginator.goToPage(page - 1);
 		currentItems = paginator.currentItems;
-		pages = paginator.getFlowBitePages();
+		currentPage = paginator.currentPage + 1;
 	}
 </script>
 
@@ -97,17 +80,16 @@
 			{#if isFull}
 				<h3 class="font-semibold text-gray-900 md:text-xl dark:text-gray-300">Video Streams</h3>
 				{#if numPages > 1}
-					<Pagination
-						{pages}
-						on:next={nextPage}
-						on:previous={previousPage}
-						on:click={(p) => onPageChange(p)}
-					/>
+					<PaginationNav {currentPage} totalPages={numPages} {onPageChange} />
 				{/if}
 			{/if}
 			<div class="h-5 w-5">
 				<button onclick={requestFs} class="text-gray-900 dark:text-gray-300">
-					<MdFullscreen role="button" class="p-2 text-xs text-black dark:text-gray-300" />
+					{#if isFull}
+						<CompressOutline class="h-5 w-5" />
+					{:else}
+						<ExpandOutline class="h-5 w-5" />
+					{/if}
 				</button>
 			</div>
 			<Tooltip class="dark:bg-gray-900" placement="bottom-start"

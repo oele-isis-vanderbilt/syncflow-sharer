@@ -1,42 +1,82 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-@import '../node_modules/flowbite/dist/flowbite.css';
+/* =============================================================
+   DESIGN TOKENS: the only place colors and fonts are defined.
+   Flowbite Svelte components read --color-primary-*, --color-secondary-*
+   and --color-gray-*, so changing these re-themes everything.
+
+   Palette: Vanderbilt University brand (brand.vanderbilt.edu/color),
+   as used on vanderbilt.edu/oele.
+     Flat Gold #CFAE70 = primary-400   Metallic gold dark #B49248 = primary-500
+     Oak #946E24       = primary-600   Black #1C1C1C = gray-900
+     Cream #F5F3EF     = gray-50       Light Gray #E4E4E4 = gray-200
+     Sky #BAC7D1       = secondary-300
+
+   Contrast (WCAG AA, checked):
+     white text on primary-600 4.65, on primary-700 6.35  (Flowbite buttons)
+     primary-600 links on white 4.65 (on gray-50 only 4.20: use primary-700, 5.73)
+     primary-400 on gray-900 8.07 (dark mode)
+     gray-500 on white 5.41, on gray-50 4.88, on gray-100 4.54; gray-900 on primary-400 8.07 (black-on-gold)
+   Gold lighter than primary-600 must never carry white text.
+   ============================================================= */
+
+@import 'tailwindcss';
+@plugin 'flowbite/plugin';
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	/* Primary: Vanderbilt gold. Light shades = brand gold, 600+ = Oak bronze,
+	   dark enough for white text. Buttons, links, focus rings, active states. */
+	--color-primary-50: #fbf7ee;
+	--color-primary-100: #f5ecd7;
+	--color-primary-200: #ecdcb5;
+	--color-primary-300: #dec58d;
+	--color-primary-400: #cfae70;
+	--color-primary-500: #b49248;
+	--color-primary-600: #946e24;
+	--color-primary-700: #7a5a1d;
+	--color-primary-800: #5f4617;
+	--color-primary-900: #453311;
+	--color-primary-950: #2a1f0a;
+
+	/* Secondary: Vanderbilt Sky. Supporting accents, info states, data viz. */
+	--color-secondary-50: #f4f7f9;
+	--color-secondary-100: #e8eef2;
+	--color-secondary-200: #d4dee5;
+	--color-secondary-300: #bac7d1;
+	--color-secondary-400: #94a7b5;
+	--color-secondary-500: #73889a;
+	--color-secondary-600: #5b6f80;
+	--color-secondary-700: #4a5a68;
+	--color-secondary-800: #3d4a55;
+	--color-secondary-900: #333e47;
+	--color-secondary-950: #20282e;
+
+	/* Neutrals: Vanderbilt cream → black, replacing Tailwind's blue-tinted gray.
+	   500 is darker than brand Dark Gray (#777777) so muted text passes AA on
+   white, gray-50 and gray-100 surfaces. */
+	--color-gray-50: #f5f3ef;
+	--color-gray-100: #ecebe8;
+	--color-gray-200: #e4e4e4;
+	--color-gray-300: #cfcfcf;
+	--color-gray-400: #a3a3a3;
+	--color-gray-500: #6a6a6a;
+	--color-gray-600: #5c5c5c;
+	--color-gray-700: #454545;
+	--color-gray-800: #2e2e2e;
+	--color-gray-900: #1c1c1c;
+	--color-gray-950: #111111;
+
+	/* Typography */
+	--font-sans:
+		'Inter Variable', ui-sans-serif, system-ui, sans-serif; /* self-hosted, imported in +layout.svelte */
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Scan Flowbite's compiled components (paths relative to this file). */
+@source '../node_modules/flowbite-svelte/dist';
+@source '../node_modules/flowbite-svelte-icons/dist';
 
 @layer base {
 	html {
-		-webkit-text-size-adjust: 100%;
-		font-family:
-			Inter,
-			ui-sans-serif,
-			system-ui,
-			-apple-system,
-			Segoe UI,
-			Roboto,
-			Helvetica Neue,
-			Arial,
-			Noto Sans,
-			sans-serif,
-			Apple Color Emoji,
-			Segoe UI Emoji,
-			Segoe UI Symbol,
-			Noto Color Emoji;
-		line-height: 1.5;
-		-moz-tab-size: 4;
-		tab-size: 4;
-	}
-
-	.related-components,
-	.references {
-		@apply flex w-full flex-wrap;
-	}
-
-	.related-components p,
-	.references p {
-		@apply w-full md:w-1/2 lg:w-1/3;
-	}
-
-	#mainContent > pre {
-		@apply mx-auto my-4 w-full overflow-auto rounded-xl border border-gray-200 bg-gray-50 bg-gradient-to-r p-2 text-sm text-gray-600 sm:p-6 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400;
+		@apply bg-white text-gray-900 antialiased dark:bg-gray-900 dark:text-gray-100;
 	}
 }

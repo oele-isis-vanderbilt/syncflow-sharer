@@ -41,26 +41,6 @@ export class Paginator<T> {
 		this.currentPage = 0;
 	}
 
-	getFlowBitePages(): { name: number; active: boolean }[] {
-		const pagesToShow = 5;
-
-		if (this.totalPages <= pagesToShow) {
-			return Array.from({ length: this.totalPages }, (_, i) => ({
-				name: i + 1,
-				active: i === this.currentPage
-			}));
-		}
-
-		const start = Math.max(0, this.currentPage - Math.floor(pagesToShow / 2));
-		const end = Math.min(this.totalPages, start + pagesToShow);
-		const pages = Array.from({ length: end - start }, (_, i) => ({
-			name: start + i + 1,
-			active: start + i === this.currentPage
-		}));
-
-		return pages;
-	}
-
 	updateItems(newItems: T[]): void {
 		this.items = newItems;
 		this.reset();
