@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { Room } from 'livekit-client';
 	import { onMount } from 'svelte';
-	import { Heading, Label, MultiSelect } from 'flowbite-svelte';
+	import { Checkbox, Heading, Label, MultiSelect } from 'flowbite-svelte';
 
-	let { audioDeviceIds = $bindable([]), videoDeviceIds = $bindable([]) } = $props();
+	let {
+		audioDeviceIds = $bindable([]),
+		videoDeviceIds = $bindable([]),
+		noiseCancellation = $bindable(false)
+	} = $props();
 	let audioDevicesSelect = $state<{ name: string; value: string }[]>([]);
 	let videoDevicesSelect = $state<{ name: string; value: string }[]>([]);
 
@@ -27,10 +31,13 @@
 
 <Heading tag="h2" class="text-xl">Select Devices</Heading>
 <div class="mt-4 flex w-full flex-col gap-4 md:flex-row">
-	<Label class="w-full">
-		Select Microphone(s)
-		<MultiSelect class="mt-2" items={audioDevicesSelect} bind:value={audioDeviceIds} />
-	</Label>
+	<div class="flex w-full flex-col gap-2">
+		<Label class="w-full">
+			Select Microphone(s)
+			<MultiSelect class="mt-2" items={audioDevicesSelect} bind:value={audioDeviceIds} />
+		</Label>
+		<Checkbox bind:checked={noiseCancellation}>Enable noise cancellation</Checkbox>
+	</div>
 
 	<Label class="w-full">
 		Select Camera(s)
