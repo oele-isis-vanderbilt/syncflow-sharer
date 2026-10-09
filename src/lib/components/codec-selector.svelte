@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Heading, Label, Select } from 'flowbite-svelte';
+	import { Label, Select } from 'flowbite-svelte';
 
 	let {
 		selectedVideoCodec = $bindable(''),
@@ -33,8 +33,7 @@
 	onMount(async () => {});
 </script>
 
-<Heading tag="h2" class="text-xl">Select Codecs</Heading>
-<div class="mt-4 flex w-full flex-col gap-4 md:flex-row">
+<div class="flex w-full flex-col gap-4 md:flex-row">
 	<Label class="w-full">
 		Select Video Codec
 		<Select class="mt-2" items={videoCodecSelect} bind:value={selectedVideoCodec} />

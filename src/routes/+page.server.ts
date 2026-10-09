@@ -2,20 +2,29 @@ import { getProjectClient } from '$lib/server/syncflow-client';
 import { syncFlowSettings } from '$lib/server/settings';
 import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
-import { getSyncflowSharerSessions } from '$lib/server/syncflow-client';
+import { getProjectDetails, getSyncflowSharerSessions } from '$lib/server/syncflow-client';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const sessionResult = await getSyncflowSharerSessions();
+	// This page is public, so pass only what sharers need. Storage details stay on the server.
+	const project = (await getProjectDetails())
+		.map((p): { name: string; description: string } | null => ({
+			name: p.name,
+			description: p.description
+		}))
+		.unwrapOr(null);
 	try {
 		const sessions = sessionResult.unwrap();
 		return {
 			sessions: sessions,
+			project,
 			settings: syncFlowSettings.toJSON(),
 			error: null
 		};
 	} catch (error) {
 		return {
 			sessions: null,
+			project,
 			error: JSON.stringify(error)
 		};
 	}
