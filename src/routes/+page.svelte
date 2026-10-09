@@ -1,6 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Alert, Button, Card, Heading, Label, P, Select } from 'flowbite-svelte';
+	import {
+		Accordion,
+		AccordionItem,
+		Alert,
+		Button,
+		Card,
+		Heading,
+		Label,
+		P,
+		Select
+	} from 'flowbite-svelte';
 	import FormField from '$lib/components/ui/FormField.svelte';
 	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
@@ -123,7 +133,25 @@
 </script>
 
 <div class="flex flex-col gap-6">
-	<Heading tag="h1" class="text-3xl md:text-4xl">Share to a session</Heading>
+	{#if data.project}
+		<Accordion>
+			<AccordionItem>
+				{#snippet header()}Project: {data.project?.name}{/snippet}
+				<dl class="flex flex-col gap-4 text-sm">
+					<div>
+						<dt class="text-gray-500 dark:text-gray-400">Name</dt>
+						<dd class="text-gray-900 dark:text-white">{data.project.name}</dd>
+					</div>
+					<div>
+						<dt class="text-gray-500 dark:text-gray-400">Description</dt>
+						<dd class="text-gray-900 dark:text-white">
+							{data.project.description || 'No description'}
+						</dd>
+					</div>
+				</dl>
+			</AccordionItem>
+		</Accordion>
+	{/if}
 	{#if data.error}
 		<Alert color="red">
 			{#snippet icon()}<ExclamationCircleOutline class="h-5 w-5" />{/snippet}
@@ -131,21 +159,26 @@
 			<pre class="mt-2 overflow-auto text-xs">{JSON.stringify(data.error, null, 2)}</pre>
 		</Alert>
 	{:else}
-		<Card size="xl" class="p-4 sm:p-6">
-			<DeviceSelector
-				bind:audioDeviceIds={userSelections.audioDeviceIds}
-				bind:videoDeviceIds={userSelections.videoDeviceIds}
-				bind:noiseCancellation={userSelections.noiseCancellation}
-			/>
-		</Card>
-		<Card size="xl" class="p-4 sm:p-6">
-			<CodecSelector
-				bind:selectedVideoCodec={userSelections.videoCodec}
-				bind:selectedAudioPreset={userSelections.audioPreset}
-				bind:selectedVideoPreset={userSelections.videoPreset}
-			/>
-		</Card>
-		<Card size="xl" class="flex flex-col gap-4 p-4 sm:p-6">
+		<Accordion multiple>
+			<AccordionItem open>
+				{#snippet header()}Devices{/snippet}
+				<DeviceSelector
+					bind:audioDeviceIds={userSelections.audioDeviceIds}
+					bind:videoDeviceIds={userSelections.videoDeviceIds}
+					bind:noiseCancellation={userSelections.noiseCancellation}
+				/>
+			</AccordionItem>
+			<AccordionItem>
+				{#snippet header()}Codecs and quality{/snippet}
+				<CodecSelector
+					bind:selectedVideoCodec={userSelections.videoCodec}
+					bind:selectedAudioPreset={userSelections.audioPreset}
+					bind:selectedVideoPreset={userSelections.videoPreset}
+				/>
+			</AccordionItem>
+		</Accordion>
+		<Heading tag="h1" class="text-xl md:text-2xl">Share to a session</Heading>
+		<Card size="xl" class="flex flex-col gap-4 sm:p-6">
 			<Heading tag="h2" class="text-xl">Select a session</Heading>
 			{#if selections.length !== 0}
 				<form

@@ -33,3 +33,9 @@ export async function getProjectDevices() {
 	const devicesResult = await projectClient.getDevices();
 	return devicesResult;
 }
+
+export async function getProjectDetails() {
+	const projectClient = getProjectClient();
+	const projectResult = await projectClient.getProjectDetails();
+	return projectResult;
+}

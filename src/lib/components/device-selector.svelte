@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Room } from 'livekit-client';
 	import { onMount } from 'svelte';
-	import { Checkbox, Heading, Label, MultiSelect } from 'flowbite-svelte';
+	import { Checkbox, Label, MultiSelect } from 'flowbite-svelte';
 
 	let {
 		audioDeviceIds = $bindable([]),
@@ -29,8 +29,7 @@
 	});
 </script>
 
-<Heading tag="h2" class="text-xl">Select Devices</Heading>
-<div class="mt-4 flex w-full flex-col gap-4 md:flex-row">
+<div class="flex w-full flex-col gap-4 md:flex-row">
 	<div class="flex w-full flex-col gap-2">
 		<Label class="w-full">
 			Select Microphone(s)
